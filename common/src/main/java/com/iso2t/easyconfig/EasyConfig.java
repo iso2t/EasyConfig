@@ -11,7 +11,7 @@ public class EasyConfig {
     public static void init() {
 		if (Services.PLATFORM.isDevelopmentEnvironment()) Constants.LOG.warn("{} is in development mode! Is this intentional?", Constants.MOD_NAME);
 
-		CONFIG = ConfigBuilder.builder(ModConfig.class, Constants.MOD_ID);
+		CONFIG = ConfigBuilder.build(ModConfig.class, Constants.MOD_ID);
     }
 
 	public static ModConfig getConfig() {
