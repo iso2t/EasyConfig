@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.iso2t.easyconfig.annotations.*;
+import com.iso2t.easyconfig.api.annotations.*;
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.CommentValues;
@@ -58,28 +58,46 @@ public class ConfigManager<T> {
     /**
      * Load (or create) the config instance
      */
-    public T load () throws IOException, IllegalAccessException {
+    public T load () {
         T cfg = instantiate(type);
-        if (Files.exists(file)) {
-            JsonNode root = mapper.readTree(Files.newBufferedReader(file));
-            populate(cfg, root);
-        }
+        try {
+			if (Files.exists(file)) {
+				JsonNode root = mapper.readTree(Files.newBufferedReader(file));
+				populate(cfg, root);
+			}
+		} catch (IOException | IllegalAccessException e) {
+			throw new IllegalStateException("Failed to load config " + file, e);
+		}
         return cfg;
+    }
+
+    /**
+     * Load the config, then write it back so missing fields and comments are generated.
+     */
+    public T loadAndSave () {
+        T config = load();
+        save(config);
+        return config;
     }
 
     /**
      * Write out with comments
      */
-    public void save (T config) throws IOException, IllegalAccessException {
+    public void save (T config) {
         Path parent = file.getParent();
-        if (parent != null && Files.notExists(parent)) {
-            Files.createDirectories(parent);
-        }
-        try (BufferedWriter w = Files.newBufferedWriter(file,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING)) {
-            writeObject(config, w, 0);
-        }
+        try {
+			if (parent != null && Files.notExists(parent)) {
+				Files.createDirectories(parent);
+			}
+			try (BufferedWriter w = Files.newBufferedWriter(file,
+					StandardOpenOption.CREATE,
+					StandardOpenOption.TRUNCATE_EXISTING)) {
+				writeObject(config, w, 0);
+			}
+		} catch (IOException | IllegalAccessException e) {
+			throw new IllegalStateException("Failed to save config " + file, e);
+		}
+
     }
 
     private <U> U instantiate (Class<U> cls) {
