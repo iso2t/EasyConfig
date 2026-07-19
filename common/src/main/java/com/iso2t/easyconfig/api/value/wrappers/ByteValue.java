@@ -3,6 +3,11 @@ package com.iso2t.easyconfig.api.value.wrappers;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
 
+/**
+ * A configuration value wrapper that represents a byte value and its allowable range.
+ * This class extends the {@code AbstractValue} class, providing additional functionality
+ * for managing a range of valid byte values.
+ */
 public class ByteValue extends AbstractValue<Byte> implements NumberRange<Byte> {
 
     private final Byte min;

@@ -3,6 +3,11 @@ package com.iso2t.easyconfig.api.value.wrappers;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
 
+/**
+ * A configuration value wrapper that represents an integer value and its allowable range.
+ * This class extends the {@code AbstractValue} class, providing functionality for
+ * managing a range of valid integer values.
+ */
 public class IntegerValue extends AbstractValue<Integer> implements NumberRange<Integer> {
 
     private final Integer min;

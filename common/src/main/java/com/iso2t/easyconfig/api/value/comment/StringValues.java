@@ -4,6 +4,18 @@ import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 
 import java.lang.reflect.Field;
 
+/**
+ * A built-in {@link CommentValueProvider} implementation for fields backed by string-based default values.
+ *
+ * Dynamically generates comment lines for configuration fields where the default value
+ * is a {@link CharSequence}. This implementation emits two comment lines:
+ *
+ * - The first line provides a string representation of the default value utilizing {@link CommentFormat#value(Object)}.
+ * - The second line specifies the length of the string if the default value is a {@link CharSequence};
+ *   otherwise, the length is considered as {@code 0}.
+ *
+ * This class is immutable and thread-safe.
+ */
 public final class StringValues implements CommentValueProvider<Object> {
 
 	@Override

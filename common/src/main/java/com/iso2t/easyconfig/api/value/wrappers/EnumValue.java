@@ -2,6 +2,12 @@ package com.iso2t.easyconfig.api.value.wrappers;
 
 import com.iso2t.easyconfig.api.value.AbstractValue;
 
+/**
+ * A configuration value wrapper that encapsulates an {@link Enum} type and provides functionality
+ * for managing enum constants and their configuration.
+ *
+ * @param <E> the type of the enum
+ */
 public class EnumValue<E extends Enum<E>> extends AbstractValue<E> {
 
 	private final Class<E> enumClass;

@@ -7,13 +7,14 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * A ConfigValue that holds a List of T.
+ * Represents a configuration value that wraps a list of elements of type T.
+ * This class extends the AbstractValue class to manage list-based configurations,
+ * supporting operations for retrieving, modifying, and managing default list values.
+ *
+ * @param <T> the type of elements in the list
  */
 public class ListValue<T> extends AbstractValue<List<T>> {
 
-	/**
-	 * @param defaultList the default contents (will be copied internally)
-	 */
 	private ListValue (List<T> defaultList) {
 		super(new ArrayList<>(defaultList));
 	}
@@ -28,30 +29,18 @@ public class ListValue<T> extends AbstractValue<List<T>> {
 		super.set(new ArrayList<>(newValue));
 	}
 
-	/**
-	 * convenience: add an element
-	 */
 	public void add (T element) {
 		get().add(element);
 	}
 
-	/**
-	 * convenience: remove an element
-	 */
 	public void remove (T element) {
 		get().remove(element);
 	}
 
-	/**
-	 * convenience: clear the list
-	 */
 	public void clear () {
 		get().clear();
 	}
 
-	/**
-	 * convenience: addAll
-	 */
 	public void addAll (Collection<? extends T> c) {
 		get().addAll(c);
 	}

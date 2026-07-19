@@ -2,6 +2,14 @@ package com.iso2t.easyconfig.api.value.comment;
 
 import java.lang.reflect.Array;
 
+/**
+ * Utility class for formatting objects and their types into string representations
+ * for use in comment generation and debugging purposes. This class provides a set of
+ * static methods to handle various data types, including primitive types, arrays,
+ * and objects.
+ * <p>
+ * The class is final and not instantiable.
+ */
 final class CommentFormat {
 
 	private CommentFormat () {

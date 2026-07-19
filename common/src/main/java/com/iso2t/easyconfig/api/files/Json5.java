@@ -13,9 +13,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a JSON5 file type, which extends the functionality of JSON by allowing
+ * additional features such as comments, unquoted property names, and trailing commas.
+ * This class provides methods for reading, writing, and converting JSON5 configuration files
+ * while preserving or generating comments in the output.
+ * <p>
+ * The JSON5 file type is implemented using Jackson's {@link ObjectMapper} and a customized
+ * {@link JsonFactory} that enables JSON5-specific parsing and serialization options.
+ */
 public class Json5 extends AbstractFileType implements ISupportsComments {
 	private static final Pattern UNQUOTED_KEY = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]*");
 
@@ -69,7 +79,7 @@ public class Json5 extends AbstractFileType implements ISupportsComments {
 		return mapper.convertValue(node.rawValue(), type);
 	}
 
-	private ConfigNode toConfigNode (JsonNode node) throws IOException {
+	private ConfigNode toConfigNode (JsonNode node) {
 		if (node == null || node.isNull()) return ConfigNode.nullNode();
 
 		if (node.isObject()) {
@@ -108,7 +118,7 @@ public class Json5 extends AbstractFileType implements ISupportsComments {
 		writer.write("{");
 		writer.newLine();
 
-		java.util.Iterator<ConfigNode.Entry> entries = node.entries().iterator();
+		Iterator<ConfigNode.Entry> entries = node.entries().iterator();
 		while (entries.hasNext()) {
 			ConfigNode.Entry entry = entries.next();
 			writeComments(entry, writer, indent + 1);
@@ -128,7 +138,7 @@ public class Json5 extends AbstractFileType implements ISupportsComments {
 		writer.write("[");
 		if (!node.elements().isEmpty()) {
 			writer.newLine();
-			java.util.Iterator<ConfigNode> elements = node.elements().iterator();
+			Iterator<ConfigNode> elements = node.elements().iterator();
 			while (elements.hasNext()) {
 				ConfigNode element = elements.next();
 				indent(writer, indent + 1);
