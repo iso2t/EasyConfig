@@ -8,13 +8,13 @@ public class ShortValue extends AbstractValue<Short> implements NumberRange<Shor
     private final Short min;
     private final Short max;
 
-    public ShortValue (Short def, Short min, Short max) {
+    private ShortValue (Short def, Short min, Short max) {
         super(def);
         this.min = min;
         this.max = max;
     }
 
-	public ShortValue (Short def) {
+	private ShortValue (Short def) {
 		this(def, Short.MIN_VALUE, Short.MAX_VALUE);
 	}
 

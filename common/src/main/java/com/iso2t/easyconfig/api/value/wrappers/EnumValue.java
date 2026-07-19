@@ -10,12 +10,12 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue<E> {
 	 * @param enumClass  the enum type, e.g. MyMode.class
 	 * @param defaultVal the default enum constant, e.g. MyMode.FOO
 	 */
-	public EnumValue (Class<E> enumClass, E defaultVal) {
+	private EnumValue (Class<E> enumClass, E defaultVal) {
 		super(defaultVal);
 		this.enumClass = enumClass;
 	}
 
-	public EnumValue (E defaultVal) {
+	private EnumValue (E defaultVal) {
 		this(defaultVal.getDeclaringClass(), defaultVal);
 	}
 

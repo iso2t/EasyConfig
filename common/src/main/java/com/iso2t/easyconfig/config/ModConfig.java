@@ -8,6 +8,6 @@ import com.iso2t.easyconfig.api.value.wrappers.BooleanValue;
 public class ModConfig {
 
 	@Comment("Display debug settings for EasyConfig during startup")
-	public BooleanValue DEBUG = new BooleanValue(false);
+	public BooleanValue DEBUG = BooleanValue.of(false);
 
 }

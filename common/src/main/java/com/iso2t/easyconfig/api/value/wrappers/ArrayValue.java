@@ -4,7 +4,7 @@ import com.iso2t.easyconfig.api.value.AbstractValue;
 
 public class ArrayValue<T> extends AbstractValue<T[]> {
 
-	public ArrayValue (T[] def) {
+	private ArrayValue (T[] def) {
 		super(def);
 	}
 

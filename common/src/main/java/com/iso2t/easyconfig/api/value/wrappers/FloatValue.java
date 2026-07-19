@@ -8,13 +8,13 @@ public class FloatValue extends AbstractValue<Float> implements NumberRange<Floa
     private final Float min;
     private final Float max;
 
-    public FloatValue (Float def, Float min, Float max) {
+	private FloatValue (Float def, Float min, Float max) {
         super(def);
         this.min = min;
         this.max = max;
     }
 
-	public FloatValue (Float def) {
+	private FloatValue (Float def) {
 		this(def, Float.MIN_VALUE, Float.MAX_VALUE);
 	}
 

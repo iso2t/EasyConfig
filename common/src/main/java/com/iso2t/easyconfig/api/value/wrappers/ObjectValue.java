@@ -4,7 +4,7 @@ import com.iso2t.easyconfig.api.value.AbstractValue;
 
 public class ObjectValue<T> extends AbstractValue<T> {
 
-    public ObjectValue (T def) {
+	private ObjectValue (T def) {
         super(def);
     }
 

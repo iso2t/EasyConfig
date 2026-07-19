@@ -1,14 +1,13 @@
 package com.iso2t.easyconfig.api.manager;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.CommentValues;
 import com.iso2t.easyconfig.api.annotations.Config;
+import com.iso2t.easyconfig.api.files.AbstractFileType;
+import com.iso2t.easyconfig.api.files.ConfigNode;
+import com.iso2t.easyconfig.api.files.FileTypes;
+import com.iso2t.easyconfig.api.files.Json5;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
@@ -18,7 +17,6 @@ import com.iso2t.easyconfig.api.value.comment.NumberValues;
 import com.iso2t.easyconfig.api.value.wrappers.EnumValue;
 import com.iso2t.easyconfig.api.value.wrappers.ListValue;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -26,31 +24,32 @@ import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 public class ConfigManager<T> {
+	
     private final Class<T> type;
     private final Path file;
-    private final ObjectMapper mapper;
+    private final AbstractFileType fileType;
 
     public ConfigManager (Class<T> type, Path file) {
+        this(type, file, Json5.class);
+    }
+
+    public ConfigManager (Class<T> type, Path file, FileTypes fileType) {
+        this(type, file, fileType.create());
+    }
+
+    public ConfigManager (Class<T> type, Path file, Class<? extends AbstractFileType> fileType) {
+        this(type, file, instantiateFileType(fileType));
+    }
+
+    public ConfigManager (Class<T> type, Path file, AbstractFileType fileType) {
         this.type = type;
         this.file = file;
-
-        JsonFactory factory = JsonFactory.builder()
-                .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
-                .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
-                .enable(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES)
-                .enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS)
-                .enable(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS)
-                .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)
-                .build();
-
-        this.mapper = new ObjectMapper(factory)
-                .enable(SerializationFeature.INDENT_OUTPUT);
+        this.fileType = fileType;
     }
 
     /**
@@ -60,7 +59,7 @@ public class ConfigManager<T> {
         T cfg = instantiate(type);
         try {
 			if (Files.exists(file)) {
-				JsonNode root = mapper.readTree(Files.newBufferedReader(file));
+				ConfigNode root = fileType.read(file);
 				populate(cfg, root);
 			}
 		} catch (IOException | IllegalAccessException e) {
@@ -82,20 +81,20 @@ public class ConfigManager<T> {
      * Write out with comments
      */
     public void save (T config) {
-        Path parent = file.getParent();
         try {
-			if (parent != null && Files.notExists(parent)) {
-				Files.createDirectories(parent);
-			}
-			try (BufferedWriter w = Files.newBufferedWriter(file,
-					StandardOpenOption.CREATE,
-					StandardOpenOption.TRUNCATE_EXISTING)) {
-				writeObject(config, w, 0);
-			}
+			fileType.write(file, buildObject(config));
 		} catch (IOException | IllegalAccessException e) {
 			throw new IllegalStateException("Failed to save config " + file, e);
 		}
 
+    }
+
+    private static AbstractFileType instantiateFileType (Class<? extends AbstractFileType> cls) {
+        try {
+            return cls.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to instantiate file type " + cls.getName(), e);
+        }
     }
 
     private <U> U instantiate (Class<U> cls) {
@@ -106,11 +105,11 @@ public class ConfigManager<T> {
         }
     }
 
-    private void populate (Object obj, JsonNode node) throws IOException, IllegalAccessException {
+    private void populate (Object obj, ConfigNode node) throws IOException, IllegalAccessException {
         for (Field f : obj.getClass().getDeclaredFields()) {
             f.setAccessible(true);
             String key = f.getName().toLowerCase();
-            JsonNode child = node.get(key);
+            ConfigNode child = node.get(key);
 
             if (isNestedConfig(f.getType())) {
                 populateNestedConfig(obj, f, child);
@@ -127,25 +126,25 @@ public class ConfigManager<T> {
                 continue;
             }
 
-            if (child != null && !child.isNull()) {
-                f.set(obj, mapper.treeToValue(child, f.getType()));
+            if (!child.isNull()) {
+                f.set(obj, fileType.readValue(child, f.getType()));
             }
         }
     }
 
-    private void populateNestedConfig (Object obj, Field f, JsonNode child) throws IllegalAccessException, IOException {
+    private void populateNestedConfig (Object obj, Field f, ConfigNode child) throws IllegalAccessException, IOException {
         Object nested = f.get(obj);
         if (nested == null) {
             nested = instantiate(f.getType());
             f.set(obj, nested);
         }
-        if (child != null && child.isObject()) {
+        if (child.isObject()) {
             populate(nested, child);
         }
     }
 
-    private void populateListValue (Object obj, Field f, JsonNode child) throws IOException, IllegalAccessException {
-        if (child == null || !child.isArray()) return;
+    private void populateListValue (Object obj, Field f, ConfigNode child) throws IOException, IllegalAccessException {
+        if (!child.isArray()) return;
 
         Type gt = f.getGenericType();
         if (!(gt instanceof ParameterizedType pt)) {
@@ -162,7 +161,7 @@ public class ConfigManager<T> {
         }
 
         java.util.List<Object> built = new ArrayList<>();
-        for (JsonNode elNode : child) {
+        for (ConfigNode elNode : child.elements()) {
             built.add(parseListElement(elNode, elemType));
         }
 
@@ -175,32 +174,32 @@ public class ConfigManager<T> {
         }
     }
 
-    private Object parseListElement (JsonNode elNode, Class<?> elemType) throws IOException, IllegalAccessException {
+    private Object parseListElement (ConfigNode elNode, Class<?> elemType) throws IOException, IllegalAccessException {
         if (isNestedConfig(elemType)) {
             Object element = instantiate(elemType);
             populate(element, elNode);
             return element;
         }
 
-        if (elNode.isValueNode()) {
-            return mapper.treeToValue(elNode, elemType);
+        if (elNode.isValue()) {
+            return fileType.readValue(elNode, elemType);
         } else if (elNode.isObject()) {
-            JsonNode valNode = elNode.get("value");
-            if (valNode != null && valNode.isValueNode()) {
-                return mapper.treeToValue(valNode, elemType);
+            ConfigNode valNode = elNode.get("value");
+            if (valNode.isValue()) {
+                return fileType.readValue(valNode, elemType);
             } else {
-                return mapper.convertValue(elNode, elemType);
+                return fileType.convertValue(elNode, elemType);
             }
         } else {
-            return mapper.convertValue(elNode, elemType);
+            return fileType.convertValue(elNode, elemType);
         }
     }
 
-    private void populateScalarValue (Object obj, Field f, JsonNode child) throws IllegalAccessException, IOException {
+    private void populateScalarValue (Object obj, Field f, ConfigNode child) throws IllegalAccessException, IOException {
         @SuppressWarnings("unchecked")
         ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
-        if (child != null && !child.isNull()) {
-            Object v = mapper.treeToValue(child, inferGenericType(f));
+        if (!child.isNull()) {
+            Object v = fileType.readValue(child, inferGenericType(f));
             cv.set(v);
         }
     }
@@ -233,43 +232,59 @@ public class ConfigManager<T> {
         };
     }
 
-    private void writeObject (Object obj, BufferedWriter w, int indent) throws IOException, IllegalAccessException {
-        w.write("{");
-        w.newLine();
+    private ConfigNode buildObject (Object obj) throws IllegalAccessException {
+        ConfigNode object = ConfigNode.object();
 
-        Field[] fields = obj.getClass().getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            Field f = fields[i];
+        for (Field f : obj.getClass().getDeclaredFields()) {
             f.setAccessible(true);
             String key = f.getName().toLowerCase();
-
-            writeComments(f, obj, w, indent);
-
-            if (isNestedConfig(f.getType())) {
-                writeNestedConfig(obj, f, key, w, indent);
-            } else if (ConfigValue.class.isAssignableFrom(f.getType())) {
-                writeConfigValue(obj, f, key, w, indent);
-            } else {
-                writePlainField(obj, f, key, w, indent);
-            }
-
-            if (i < fields.length - 1) w.write(",");
-            w.newLine();
+            object.put(key, buildFieldValue(obj, f), collectComments(f, obj));
         }
 
-        indent(w, indent);
-        w.write("}");
-        if (indent == 0) w.newLine();
+        return object;
     }
 
-    private void writeComments (Field f, Object obj, BufferedWriter w, int indent) throws IOException {
+    private ConfigNode buildFieldValue (Object obj, Field f) throws IllegalAccessException {
+        if (isNestedConfig(f.getType())) {
+            Object nested = f.get(obj);
+            if (nested == null) {
+                nested = instantiate(f.getType());
+                f.set(obj, nested);
+            }
+            return buildObject(nested);
+        }
+
+        if (ConfigValue.class.isAssignableFrom(f.getType())) {
+            @SuppressWarnings("unchecked")
+            ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
+            return buildValue(cv.get());
+        }
+
+        return buildValue(f.get(obj));
+    }
+
+    private ConfigNode buildValue (Object value) throws IllegalAccessException {
+        if (value instanceof Collection<?> collection) {
+            ConfigNode array = ConfigNode.array();
+            for (Object element : collection) {
+                array.add(buildValue(element));
+            }
+            return array;
+        }
+
+        if (value != null && isNestedConfig(value.getClass())) {
+            return buildObject(value);
+        }
+
+        return ConfigNode.value(value);
+    }
+
+    private List<String> collectComments (Field f, Object obj) throws IllegalAccessException {
+        List<String> comments = new ArrayList<>();
+
         Comment comment = f.getAnnotation(Comment.class);
         if (comment != null) {
-            for (String line : comment.value()) {
-                indent(w, indent + 1);
-                w.write("// " + line);
-                w.newLine();
-            }
+            comments.addAll(List.of(comment.value()));
         }
 
         CommentValues commentValues = f.getAnnotation(CommentValues.class);
@@ -282,7 +297,7 @@ public class ConfigManager<T> {
                     providerClass = detectProvider(f, fieldValue);
                 }
 
-                if (providerClass == null) return;
+                if (providerClass == null) return comments;
 
                 @SuppressWarnings("unchecked")
                 CommentValueProvider<Object> provider =
@@ -292,84 +307,24 @@ public class ConfigManager<T> {
                 Object toPass = currentValue;
                 if (fieldValue != null) {
                     Class<?> expectedType = getProviderExpectedType(providerClass);
-                    // If the provider specifically expects the wrapper (e.g. NumberRange),
-                    // but the currentValue is just a primitive/object (e.g. Integer), pass the wrapper.
                     if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(currentValue)) {
                         toPass = fieldValue;
                     }
                 }
 
-                for (String line : provider.getCommentLines(f, toPass)) {
-                    indent(w, indent + 1);
-                    w.write("// " + line);
-                    w.newLine();
+                String[] providedComments = provider.getCommentLines(f, toPass);
+                if (providedComments != null) {
+                    for (String providedComment : providedComments) {
+                        if (providedComment != null) comments.add(providedComment);
+                    }
                 }
             } catch (ReflectiveOperationException e) {
                 throw new IllegalStateException(
                         "Failed to invoke AutoComment provider " + commentValues.value().getName(), e);
             }
         }
-    }
 
-    private void writeNestedConfig (Object obj, Field f, String key, BufferedWriter w, int indent) throws IllegalAccessException, IOException {
-        Object nested = f.get(obj);
-        if (nested == null) {
-            nested = instantiate(f.getType());
-            f.set(obj, nested);
-        }
-
-        indent(w, indent + 1);
-        w.write(key + ": ");
-        writeObject(nested, w, indent + 1);
-    }
-
-    private void writeConfigValue (Object obj, Field f, String key, BufferedWriter w, int indent) throws IllegalAccessException, IOException {
-        @SuppressWarnings("unchecked")
-        ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
-        Object val = cv.get();
-
-        indent(w, indent + 1);
-        w.write(key + ": ");
-
-        if (val instanceof Collection<?> coll) {
-            writeCollection(coll, w, indent);
-        } else {
-            w.write(mapper.writeValueAsString(val));
-        }
-    }
-
-    private void writePlainField (Object obj, Field f, String key, BufferedWriter w, int indent) throws IllegalAccessException, IOException {
-        Object val = f.get(obj);
-        indent(w, indent + 1);
-        w.write(key + ": ");
-        w.write(mapper.writeValueAsString(val));
-    }
-
-    private void writeCollection (Collection<?> coll, BufferedWriter w, int indent) throws IOException, IllegalAccessException {
-        w.write("[");
-        if (!coll.isEmpty()) {
-            w.newLine();
-            Iterator<?> it = coll.iterator();
-            while (it.hasNext()) {
-                Object element = it.next();
-                indent(w, indent + 2);
-
-                if (element != null && isNestedConfig(element.getClass())) {
-                    writeObject(element, w, indent + 2);
-                } else {
-                    w.write(mapper.writeValueAsString(element));
-                }
-
-                if (it.hasNext()) w.write(",");
-                w.newLine();
-            }
-            indent(w, indent + 1);
-        }
-        w.write("]");
-    }
-
-    private void indent (BufferedWriter w, int levels) throws IOException {
-        for (int i = 0; i < levels; i++) w.write("    ");
+        return comments;
     }
 
     private boolean isNestedConfig (Class<?> cls) {

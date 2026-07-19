@@ -8,13 +8,13 @@ public class IntegerValue extends AbstractValue<Integer> implements NumberRange<
     private final Integer min;
     private final Integer max;
 
-    public IntegerValue (Integer def, Integer min, Integer max) {
+	private IntegerValue (Integer def, Integer min, Integer max) {
         super(def);
         this.min = min;
         this.max = max;
     }
 
-	public IntegerValue (int def) {
+	private IntegerValue (int def) {
 		this(def, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 

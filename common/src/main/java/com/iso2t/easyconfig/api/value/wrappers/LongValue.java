@@ -8,13 +8,13 @@ public class LongValue extends AbstractValue<Long> implements NumberRange<Long> 
     private final Long min;
     private final Long max;
 
-    public LongValue (Long def, Long min, Long max) {
+	private LongValue (Long def, Long min, Long max) {
         super(def);
         this.min = min;
         this.max = max;
     }
 
-	public LongValue (Long def) {
+	private LongValue (Long def) {
 		this(def, Long.MIN_VALUE, Long.MAX_VALUE);
 	}
 

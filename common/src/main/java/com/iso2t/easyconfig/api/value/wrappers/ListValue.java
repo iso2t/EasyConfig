@@ -14,7 +14,7 @@ public class ListValue<T> extends AbstractValue<List<T>> {
 	/**
 	 * @param defaultList the default contents (will be copied internally)
 	 */
-	public ListValue (List<T> defaultList) {
+	private ListValue (List<T> defaultList) {
 		super(new ArrayList<>(defaultList));
 	}
 

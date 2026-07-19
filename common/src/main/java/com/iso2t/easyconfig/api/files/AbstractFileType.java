@@ -1,9 +1,24 @@
 package com.iso2t.easyconfig.api.files;
 
-public abstract class AbstractFileType<T> {
+import java.io.IOException;
+import java.nio.file.Path;
 
-	public abstract void write(T value);
+public abstract class AbstractFileType {
+	private final String extension;
 
-	public abstract T read();
+	public AbstractFileType (String extension) {
+		this.extension = extension;
+	}
 
+	public String extension () {
+		return extension;
+	}
+
+	public abstract ConfigNode read (Path file) throws IOException;
+
+	public abstract void write (Path file, ConfigNode root) throws IOException;
+
+	public abstract <T> T readValue (ConfigNode node, Class<T> type) throws IOException;
+
+	public abstract <T> T convertValue (ConfigNode node, Class<T> type);
 }
