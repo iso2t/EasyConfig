@@ -17,6 +17,9 @@
     "entrypoints": {
         "main": [
           "com.iso2t.easyconfig.ECFabric"
+        ],
+        "client": [
+          "com.iso2t.easyconfig.ECFabricClient"
         ]
     },
     "mixins": [

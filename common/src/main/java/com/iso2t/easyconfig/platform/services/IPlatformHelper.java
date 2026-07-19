@@ -1,6 +1,7 @@
 package com.iso2t.easyconfig.platform.services;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface IPlatformHelper {
 
@@ -18,6 +19,24 @@ public interface IPlatformHelper {
 	 * @return True if the mod is loaded, false otherwise.
 	 */
 	boolean isModLoaded (String modId);
+
+	/**
+	 * Gets loaded mods that declare the given mod id as a required dependency.
+	 *
+	 * @param modId The mod id to check dependents for.
+	 * @return Loaded mod ids that require the given mod.
+	 */
+	List<String> getDependentMods (String modId);
+
+	/**
+	 * Counts loaded mods that declare the given mod id as a required dependency.
+	 *
+	 * @param modId The mod id to check dependents for.
+	 * @return Number of loaded mods that require the given mod.
+	 */
+	default int getDependentModCount (String modId) {
+		return getDependentMods(modId).size();
+	}
 
 	/**
 	 * Check if the game is currently in a development environment.
