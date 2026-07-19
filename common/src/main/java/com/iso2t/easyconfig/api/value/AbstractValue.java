@@ -1,6 +1,7 @@
 package com.iso2t.easyconfig.api.value;
 
 public abstract class AbstractValue<T> implements ConfigValue<T> {
+
 	private T value;
 	private final T defaultValue;
 

@@ -8,7 +8,7 @@ public class FloatValue extends AbstractValue<Float> implements NumberRange<Floa
     private final Float min;
     private final Float max;
 
-    public FloatValue(Float def, Float min, Float max) {
+    public FloatValue (Float def, Float min, Float max) {
         super(def);
         this.min = min;
         this.max = max;
@@ -19,14 +19,22 @@ public class FloatValue extends AbstractValue<Float> implements NumberRange<Floa
 	}
 
     @Override
-    public Float getMin() {
+    public Float getMin () {
         return min;
     }
 
     @Override
-    public Float getMax() {
+    public Float getMax () {
         return max;
     }
+	
+	public static FloatValue of (Float def) {
+		return new FloatValue(def);
+	}
+	
+	public static FloatValue of (Float def, Float min, Float max) {
+		return new FloatValue(def, min, max);
+	}
 
 }
 

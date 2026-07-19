@@ -30,4 +30,8 @@ public class ArrayValue<T> extends AbstractValue<T[]> {
 		return get()[get().length - 1];
 	}
 
+	public static <T> ArrayValue<T> of (T... values) {
+		return new ArrayValue<>(values);
+	}
+
 }

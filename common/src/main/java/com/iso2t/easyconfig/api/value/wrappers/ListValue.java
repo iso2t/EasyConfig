@@ -20,13 +20,11 @@ public class ListValue<T> extends AbstractValue<List<T>> {
 
 	@Override
 	public List<T> get () {
-		// return the live list so callers can mutate it if desired
 		return super.get();
 	}
 
 	@Override
 	public void set (List<T> newValue) {
-		// copy to avoid external aliasing
 		super.set(new ArrayList<>(newValue));
 	}
 
@@ -57,4 +55,14 @@ public class ListValue<T> extends AbstractValue<List<T>> {
 	public void addAll (Collection<? extends T> c) {
 		get().addAll(c);
 	}
+	
+	@SafeVarargs
+	public static <T> ListValue<T> of (T... values) {
+		return new ListValue<>(List.of(values));
+	}
+	
+	public static <T> ListValue<T> of (List<T> list) {
+		return new ListValue<>(list);
+	}
+	
 }

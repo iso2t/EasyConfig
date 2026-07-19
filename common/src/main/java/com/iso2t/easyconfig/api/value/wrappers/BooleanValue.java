@@ -6,4 +6,9 @@ public class BooleanValue extends AbstractValue<Boolean> {
 	public BooleanValue (boolean def) {
 		super(def);
 	}
+	
+	public static BooleanValue of (boolean def) {
+		return new BooleanValue(def);
+	}
+	
 }

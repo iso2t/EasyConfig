@@ -27,5 +27,14 @@ public class ByteValue extends AbstractValue<Byte> implements NumberRange<Byte> 
     public Byte getMax () {
         return max;
     }
+	
+	public static ByteValue of (Byte def) {
+		return new ByteValue(def);
+	}
+	
+	public static ByteValue of (Byte def, Byte min, Byte max) {
+		return new ByteValue(def, min, max);
+	}
+	
 }
 

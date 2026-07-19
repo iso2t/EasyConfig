@@ -27,6 +27,14 @@ public class LongValue extends AbstractValue<Long> implements NumberRange<Long> 
     public Long getMax () {
         return max;
     }
+	
+	public static LongValue of (Long def) {
+		return new LongValue(def);
+	}
+	
+	public static LongValue of (Long def, Long min, Long max) {
+		return new LongValue(def, min, max);
+	}
 
 }
 

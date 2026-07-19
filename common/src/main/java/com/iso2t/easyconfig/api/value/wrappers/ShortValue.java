@@ -27,6 +27,14 @@ public class ShortValue extends AbstractValue<Short> implements NumberRange<Shor
     public Short getMax () {
         return max;
     }
+	
+	public static ShortValue of (Short def) {
+		return new ShortValue(def);
+	}
+	
+	public static ShortValue of (Short def, Short min, Short max) {
+		return new ShortValue(def, min, max);
+	}
 
 }
 

@@ -27,5 +27,13 @@ public class IntegerValue extends AbstractValue<Integer> implements NumberRange<
     public Integer getMax () {
         return max;
     }
+	
+	public static IntegerValue of (int def) {
+		return new IntegerValue(def);
+	}
+	
+	public static IntegerValue of (int def, int min, int max) {
+		return new IntegerValue(def, min, max);
+	}
 
 }

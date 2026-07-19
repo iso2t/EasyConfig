@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.iso2t.easyconfig.api.annotations.*;
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.CommentValues;
@@ -31,7 +30,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 public class ConfigManager<T> {
     private final Class<T> type;
@@ -163,15 +161,14 @@ public class ConfigManager<T> {
             elemType = unwrapValueType(declaredElem);
         }
 
-        List<Object> built = new ArrayList<>();
+        java.util.List<Object> built = new ArrayList<>();
         for (JsonNode elNode : child) {
             built.add(parseListElement(elNode, elemType));
         }
 
         Object raw = f.get(obj);
         if (raw instanceof ListValue<?> lv) {
-            @SuppressWarnings("unchecked")
-            ListValue<Object> listVal = (ListValue<Object>) lv;
+            @SuppressWarnings("unchecked") ListValue<Object> listVal = (ListValue<Object>) lv;
             listVal.set(built);
         } else {
             throw new IllegalStateException("Field " + f.getName() + " is not a ListValue: " + raw.getClass());
@@ -219,15 +216,19 @@ public class ConfigManager<T> {
 
         String typeName = f.getType().getSimpleName();
         return switch (typeName) {
+			case "ArrayValue" -> f.getType().getComponentType();
             case "BooleanValue" -> Boolean.class;
+			case "ByteValue" -> Byte.class;
+			case "CharacterValue" -> Character.class;
+			case "DoubleValue" -> Double.class;
+			case "EnumValue" -> Enum.class;
+			case "FloatValue" -> Float.class;
             case "IntegerValue" -> Integer.class;
+			case "ListValue" -> java.util.List.class;
+			case "LongValue" -> Long.class;
+			case "ObjectValue" -> Object.class;
+			case "ShortValue" -> Short.class;
             case "StringValue" -> String.class;
-            case "DoubleValue" -> Double.class;
-            case "LongValue" -> Long.class;
-            case "FloatValue" -> Float.class;
-            case "ShortValue" -> Short.class;
-            case "ByteValue" -> Byte.class;
-            case "ObjectValue" -> Object.class;
             default -> throw new IllegalStateException("Unknown ConfigValue type " + typeName);
         };
     }
@@ -403,7 +404,7 @@ public class ConfigManager<T> {
 
         if (fieldType.isEnum()) return EnumValues.class;
         if (EnumValue.class.isAssignableFrom(fieldType)) return EnumValues.class;
-        if (fieldValue instanceof Enum) return EnumValues.class;
+        if (fieldValue instanceof java.lang.Enum) return EnumValues.class;
         if (fieldValue instanceof EnumValue) return EnumValues.class;
 
         return null;

@@ -15,7 +15,7 @@ public class ConfigBuilder {
 	 *
 	 * @param clazz The class to create a ConfigManager for.
 	 * @param modid The modid to use for the config file.
-	 * @return A new ConfigManager instance.
+	 * @return A built config instance.
 	 * @param <T> The type of the class.
 	 */
 	public static <T> T build (Class<T> clazz, String modid) {
