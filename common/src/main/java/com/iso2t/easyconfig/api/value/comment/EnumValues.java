@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * <p>Usage:
  * <pre>{@code
- * @CommentValues
+ * @Comment(provider = EnumValues.class)
  * private Mode mode = Mode.BALANCED;
  * }</pre>
  */
@@ -34,7 +34,7 @@ public final class EnumValues implements CommentValueProvider<Enum<?>> {
         Object[] constants = type.getEnumConstants();
         if (constants == null) {
             throw new IllegalArgumentException(
-                    "@CommentValues(EnumValues.class) requires an enum field, but field '"
+                    "@Comment(provider = EnumValues.class) requires an enum field, but field '"
                             + field.getName() + "' has type " + type.getName());
         }
 

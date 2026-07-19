@@ -2,7 +2,6 @@ package com.iso2t.easyconfig.api.manager;
 
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
-import com.iso2t.easyconfig.api.annotations.CommentValues;
 import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.files.AbstractFileType;
 import com.iso2t.easyconfig.api.files.ConfigNode;
@@ -12,10 +11,21 @@ import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
 import com.iso2t.easyconfig.api.value.comment.AutoCommentValueProvider;
+import com.iso2t.easyconfig.api.value.comment.ArrayValues;
+import com.iso2t.easyconfig.api.value.comment.BooleanValues;
+import com.iso2t.easyconfig.api.value.comment.CharacterValues;
 import com.iso2t.easyconfig.api.value.comment.EnumValues;
+import com.iso2t.easyconfig.api.value.comment.ListValues;
 import com.iso2t.easyconfig.api.value.comment.NumberValues;
+import com.iso2t.easyconfig.api.value.comment.ObjectValues;
+import com.iso2t.easyconfig.api.value.comment.StringValues;
+import com.iso2t.easyconfig.api.value.wrappers.ArrayValue;
+import com.iso2t.easyconfig.api.value.wrappers.BooleanValue;
+import com.iso2t.easyconfig.api.value.wrappers.CharacterValue;
 import com.iso2t.easyconfig.api.value.wrappers.EnumValue;
 import com.iso2t.easyconfig.api.value.wrappers.ListValue;
+import com.iso2t.easyconfig.api.value.wrappers.ObjectValue;
+import com.iso2t.easyconfig.api.value.wrappers.StringValue;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -26,7 +36,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ConfigManager<T> {
 	
@@ -72,9 +84,17 @@ public class ConfigManager<T> {
      * Load the config, then write it back so missing fields and comments are generated.
      */
     public T loadAndSave () {
-        T config = load();
-        save(config);
-        return config;
+        T cfg = instantiate(type);
+        try {
+            ConfigNode existingRoot = readExistingRoot();
+            if (existingRoot != null) {
+                populate(cfg, existingRoot);
+            }
+            fileType.write(file, merge(existingRoot, buildObject(cfg)));
+        } catch (IOException | IllegalAccessException e) {
+            throw new IllegalStateException("Failed to load and save config " + file, e);
+        }
+        return cfg;
     }
 
     /**
@@ -82,11 +102,52 @@ public class ConfigManager<T> {
      */
     public void save (T config) {
         try {
-			fileType.write(file, buildObject(config));
+            fileType.write(file, merge(readExistingRoot(), buildObject(config)));
 		} catch (IOException | IllegalAccessException e) {
 			throw new IllegalStateException("Failed to save config " + file, e);
 		}
 
+    }
+
+    private ConfigNode readExistingRoot () throws IOException {
+        if (!Files.exists(file)) return null;
+        ConfigNode root = fileType.read(file);
+        if (root == null || !root.isObject()) return null;
+        return root;
+    }
+
+    private ConfigNode merge (ConfigNode existing, ConfigNode generated) {
+        if (existing == null || !existing.isObject() || !generated.isObject()) {
+            return generated.copy();
+        }
+
+        ConfigNode merged = ConfigNode.object();
+        Set<String> generatedKeys = new HashSet<>();
+
+        for (ConfigNode.Entry generatedEntry : generated.entries()) {
+            String key = generatedEntry.key();
+            generatedKeys.add(key);
+
+            ConfigNode existingValue = existing.get(key);
+            ConfigNode mergedValue = mergeValue(existingValue, generatedEntry.value());
+            merged.put(key, mergedValue, generatedEntry.comments());
+        }
+
+        for (ConfigNode.Entry existingEntry : existing.entries()) {
+            if (!generatedKeys.contains(existingEntry.key())) {
+                merged.put(existingEntry.key(), existingEntry.value().copy(), existingEntry.comments());
+            }
+        }
+
+        return merged;
+    }
+
+    private ConfigNode mergeValue (ConfigNode existing, ConfigNode generated) {
+        if (existing.isObject() && generated.isObject()) {
+            return merge(existing, generated);
+        }
+
+        return generated.copy();
     }
 
     private static AbstractFileType instantiateFileType (Class<? extends AbstractFileType> cls) {
@@ -127,7 +188,7 @@ public class ConfigManager<T> {
             }
 
             if (!child.isNull()) {
-                f.set(obj, fileType.readValue(child, f.getType()));
+                populatePlainField(obj, f, child);
             }
         }
     }
@@ -161,8 +222,12 @@ public class ConfigManager<T> {
         }
 
         java.util.List<Object> built = new ArrayList<>();
-        for (ConfigNode elNode : child.elements()) {
-            built.add(parseListElement(elNode, elemType));
+        try {
+            for (ConfigNode elNode : child.elements()) {
+                built.add(parseListElement(elNode, elemType));
+            }
+        } catch (IOException | RuntimeException e) {
+            return;
         }
 
         Object raw = f.get(obj);
@@ -199,8 +264,20 @@ public class ConfigManager<T> {
         @SuppressWarnings("unchecked")
         ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
         if (!child.isNull()) {
-            Object v = fileType.readValue(child, inferGenericType(f));
-            cv.set(v);
+            try {
+                Object v = fileType.readValue(child, inferGenericType(f));
+                cv.set(v);
+            } catch (IOException | RuntimeException e) {
+                return;
+            }
+        }
+    }
+
+    private void populatePlainField (Object obj, Field f, ConfigNode child) throws IllegalAccessException {
+        try {
+            f.set(obj, fileType.readValue(child, f.getType()));
+        } catch (IOException | RuntimeException e) {
+            return;
         }
     }
 
@@ -287,44 +364,53 @@ public class ConfigManager<T> {
             comments.addAll(List.of(comment.value()));
         }
 
-        CommentValues commentValues = f.getAnnotation(CommentValues.class);
-        if (commentValues != null) {
-            try {
-                Class<? extends CommentValueProvider<?>> providerClass = commentValues.value();
-                Object fieldValue = f.get(obj);
-
-                if (providerClass == AutoCommentValueProvider.class) {
-                    providerClass = detectProvider(f, fieldValue);
-                }
-
-                if (providerClass == null) return comments;
-
-                @SuppressWarnings("unchecked")
-                CommentValueProvider<Object> provider =
-                        (CommentValueProvider<Object>) providerClass.getDeclaredConstructor().newInstance();
-                Object currentValue = fieldValue instanceof ConfigValue<?> cv ? cv.get() : fieldValue;
-
-                Object toPass = currentValue;
-                if (fieldValue != null) {
-                    Class<?> expectedType = getProviderExpectedType(providerClass);
-                    if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(currentValue)) {
-                        toPass = fieldValue;
-                    }
-                }
-
-                String[] providedComments = provider.getCommentLines(f, toPass);
-                if (providedComments != null) {
-                    for (String providedComment : providedComments) {
-                        if (providedComment != null) comments.add(providedComment);
-                    }
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(
-                        "Failed to invoke AutoComment provider " + commentValues.value().getName(), e);
+        if (isNestedConfig(f.getType())) {
+            Comment typeComment = f.getType().getAnnotation(Comment.class);
+            if (typeComment != null) {
+                comments.addAll(List.of(typeComment.value()));
             }
         }
 
+        if (comment != null && comment.values()) {
+            appendValueComments(comments, f, obj, comment.provider());
+        }
+
         return comments;
+    }
+
+    private void appendValueComments (List<String> comments, Field f, Object obj, Class<? extends CommentValueProvider<?>> providerClass)
+            throws IllegalAccessException {
+        try {
+            Object fieldValue = f.get(obj);
+
+            if (providerClass == AutoCommentValueProvider.class) {
+                providerClass = detectProvider(f, fieldValue);
+            }
+
+            if (providerClass == null) return;
+
+            @SuppressWarnings("unchecked")
+            CommentValueProvider<Object> provider =
+                    (CommentValueProvider<Object>) providerClass.getDeclaredConstructor().newInstance();
+            Object currentValue = fieldValue instanceof ConfigValue<?> cv ? cv.get() : fieldValue;
+
+            Object toPass = currentValue;
+            if (fieldValue != null) {
+                Class<?> expectedType = getProviderExpectedType(providerClass);
+                if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(currentValue)) {
+                    toPass = fieldValue;
+                }
+            }
+
+            String[] providedComments = provider.getCommentLines(f, toPass);
+            if (providedComments != null) {
+                for (String providedComment : providedComments) {
+                    if (providedComment != null) comments.add(providedComment);
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to invoke comment provider " + providerClass.getName(), e);
+        }
     }
 
     private boolean isNestedConfig (Class<?> cls) {
@@ -361,6 +447,29 @@ public class ConfigManager<T> {
         if (EnumValue.class.isAssignableFrom(fieldType)) return EnumValues.class;
         if (fieldValue instanceof java.lang.Enum) return EnumValues.class;
         if (fieldValue instanceof EnumValue) return EnumValues.class;
+
+        if (BooleanValue.class.isAssignableFrom(fieldType)) return BooleanValues.class;
+        if (fieldType == Boolean.class || fieldType == boolean.class) return BooleanValues.class;
+        if (fieldValue instanceof Boolean) return BooleanValues.class;
+
+        if (StringValue.class.isAssignableFrom(fieldType)) return StringValues.class;
+        if (CharSequence.class.isAssignableFrom(fieldType)) return StringValues.class;
+        if (fieldValue instanceof CharSequence) return StringValues.class;
+
+        if (CharacterValue.class.isAssignableFrom(fieldType)) return CharacterValues.class;
+        if (fieldType == Character.class || fieldType == char.class) return CharacterValues.class;
+        if (fieldValue instanceof Character) return CharacterValues.class;
+
+        if (ArrayValue.class.isAssignableFrom(fieldType)) return ArrayValues.class;
+        if (fieldType.isArray()) return ArrayValues.class;
+        if (fieldValue != null && fieldValue.getClass().isArray()) return ArrayValues.class;
+
+        if (ListValue.class.isAssignableFrom(fieldType)) return ListValues.class;
+        if (Collection.class.isAssignableFrom(fieldType)) return ListValues.class;
+        if (fieldValue instanceof Collection<?>) return ListValues.class;
+
+        if (ObjectValue.class.isAssignableFrom(fieldType)) return ObjectValues.class;
+        if (fieldValue instanceof ObjectValue<?>) return ObjectValues.class;
 
         return null;
     }

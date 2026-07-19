@@ -83,6 +83,10 @@ public final class ConfigNode {
 		return entry.value();
 	}
 
+	public boolean contains (String key) {
+		return isObject() && entries.containsKey(key);
+	}
+
 	public Collection<Entry> entries () {
 		require(Type.OBJECT);
 		return Collections.unmodifiableCollection(entries.values());
@@ -121,6 +125,27 @@ public final class ConfigNode {
 			}
 			case VALUE -> value;
 			case NULL -> null;
+		};
+	}
+
+	public ConfigNode copy () {
+		return switch (type) {
+			case OBJECT -> {
+				ConfigNode copy = object();
+				for (Entry entry : entries.values()) {
+					copy.put(entry.key(), entry.value().copy(), entry.comments());
+				}
+				yield copy;
+			}
+			case ARRAY -> {
+				ConfigNode copy = array();
+				for (ConfigNode element : elements) {
+					copy.add(element.copy());
+				}
+				yield copy;
+			}
+			case VALUE -> value(value);
+			case NULL -> nullNode();
 		};
 	}
 

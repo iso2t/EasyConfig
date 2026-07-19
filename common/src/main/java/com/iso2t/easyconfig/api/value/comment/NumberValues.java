@@ -20,7 +20,7 @@ import java.util.List;
  *
  * <p>Usage:
  * <pre>{@code
- * @CommentValues
+ * @Comment(provider = NumberValues.class)
  * private IntegerValue port = new IntegerValue(8080, 1024, 65535);
  * }</pre>
  */

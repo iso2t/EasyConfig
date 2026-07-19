@@ -11,5 +11,5 @@ public @interface Config {
     /**
      * Section name in JSON5 (will be forced lower-case)
      */
-    String name () default "Config";
+    String name ();
 }
