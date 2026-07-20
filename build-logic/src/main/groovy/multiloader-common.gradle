@@ -3,6 +3,9 @@ plugins {
     id 'maven-publish'
 }
 
+import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.authentication.http.BasicAuthentication
+
 base {
     archivesName = "${mod_id}-${project.name}-${minecraft_version}"
 }
@@ -42,6 +45,7 @@ processResources {
             'minecraft_version_range'      : minecraft_version_range,
             'fabric_version'               : fabric_version,
             'fabric_loader_version'        : fabric_loader_version,
+            'modmenu_version'              : modmenu_version,
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_id'                       : mod_id,
@@ -71,13 +75,37 @@ processResources {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifactId base.archivesName.get()
+            groupId = "com.iso2t.${mod_id}"
+            artifactId = project.name == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-${project.name}-${minecraft_version}"
+            version = project.version
             from components.java
         }
     }
     repositories {
         maven {
-            url System.getenv('local_maven_url')
+            name = 'iso2t'
+            url = uri(System.getenv('ISO2T_MAVEN_URL') ?: 'https://maven.iso2t.com/releases')
+            credentials(PasswordCredentials) {
+                username = credentialValue(['ISO2T_MAVEN_USERNAME', 'MAVEN_USERNAME', 'MAVEN_USER'], ['iso2tUsername', 'mavenUsername'])
+                password = credentialValue(['ISO2T_MAVEN_PASSWORD', 'MAVEN_PASSWORD', 'MAVEN_TOKEN'], ['iso2tPassword', 'mavenPassword'])
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
+}
+
+String credentialValue(List<String> environmentNames, List<String> propertyNames) {
+    for (String environmentName : environmentNames) {
+        String value = System.getenv(environmentName)
+        if (value != null && !value.isBlank()) return value
+    }
+
+    for (String propertyName : propertyNames) {
+        Object value = findProperty(propertyName)
+        if (value != null && !value.toString().isBlank()) return value.toString()
+    }
+
+    return null
 }

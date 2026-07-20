@@ -12,7 +12,7 @@
         "sources": "https://github.com/FabricMC/fabric-example-mod"
     },
     "license": "${license}",
-    "icon": "${mod_id}.png",
+    "icon": "icon.png",
     "environment": "*",
     "entrypoints": {
         "main": [
@@ -20,6 +20,9 @@
         ],
         "client": [
           "com.iso2t.easyconfig.ECFabricClient"
+        ],
+        "modmenu": [
+          "com.iso2t.easyconfig.client.FabricModMenuIntegration"
         ]
     },
     "mixins": [
@@ -32,8 +35,20 @@
         "minecraft": "~${minecraft_version}",
         "java": ">=${java_version}"
     },
-    "suggests": {
-        "another-mod": "*"
+    "recommends": {
+        "modmenu": "*"
+    },
+    "custom": {
+      "modmenu": {
+        "links": {
+          "modrinth": "https://modrinth.com/mod/${mod_id}",
+          "curseforge": "https://www.curseforge.com/minecraft/mc-mods/${mod_id}",
+          "modrinth-api": "https://api.modrinth.com/v2/mod/${mod_id}",
+          "curseforge-api": "https://api.curseforge.com/v1/mods/${mod_id}"
+        },
+        "badges": ["library"],
+        "icon": "icon.png"
+      }
     }
 }
   

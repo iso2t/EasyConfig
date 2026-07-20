@@ -2,12 +2,24 @@ plugins {
     id 'multiloader-loader'
     id 'net.fabricmc.fabric-loom'
 }
+
+repositories {
+    maven {
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
+        content {
+            includeGroup("com.terraformersmc")
+        }
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     implementation("net.fabricmc:fabric-loader:${fabric_loader_version}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
     implementation("com.fasterxml.jackson.core:jackson-core:2.21.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
+    implementation("com.terraformersmc:modmenu:${modmenu_version}")
 }
 
 loom {
