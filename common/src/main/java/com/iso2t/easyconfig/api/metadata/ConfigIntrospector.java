@@ -6,16 +6,12 @@ import com.iso2t.easyconfig.api.value.NumberRange;
 import com.iso2t.easyconfig.api.value.wrappers.*;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 public final class ConfigIntrospector {
 
-	private ConfigIntrospector () {}
+	private ConfigIntrospector () {
+	}
 
 	public static <T> ConfigSchema<T> inspect (Class<T> type) {
 		return inspect(ConfigReflection.instantiate(type));
@@ -53,20 +49,7 @@ public final class ConfigIntrospector {
 	}
 
 	private static ConfigEntry entry (List<String> path, String key, Field field, Object owner, Object defaultOwner, Object raw, ConfigEntryKind kind) {
-		return new ConfigEntry(
-			path,
-			key,
-			displayName(field.getName()),
-			kind,
-			field,
-			owner,
-			defaultOwner,
-			valueType(field, raw),
-			ConfigReflection.collectComments(field, owner),
-			allowedValues(field, raw),
-			ConfigEntry.minValue(raw),
-			ConfigEntry.maxValue(raw)
-		);
+		return new ConfigEntry(path, key, displayName(field.getName()), kind, field, owner, defaultOwner, valueType(field, raw), ConfigReflection.collectComments(field, owner), allowedValues(field, raw), ConfigEntry.minValue(raw), ConfigEntry.maxValue(raw));
 	}
 
 	private static ConfigEntryKind kind (Field field, Object raw) {

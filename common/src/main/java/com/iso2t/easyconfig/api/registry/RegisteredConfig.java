@@ -6,11 +6,11 @@ import net.minecraft.network.chat.Component;
 
 public final class RegisteredConfig<T> {
 
-	private final String modId;
-	private final String key;
-	private final Component title;
+	private final String           modId;
+	private final String           key;
+	private final Component        title;
 	private final ConfigManager<T> manager;
-	private final T config;
+	private final T                config;
 
 	RegisteredConfig (String modId, String key, Component title, ConfigManager<T> manager, T config) {
 		this.modId = modId;

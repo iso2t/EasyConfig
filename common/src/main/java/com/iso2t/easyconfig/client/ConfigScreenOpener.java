@@ -8,10 +8,11 @@ import net.minecraft.client.Minecraft;
 
 public final class ConfigScreenOpener {
 
-	private static final String OPEN_KEY = "key.easyconfig.open_config_screen";
+	private static final String     OPEN_KEY           = "key.easyconfig.open_config_screen";
 	private static final KeyMapping OPEN_CONFIG_SCREEN = new KeyMapping(OPEN_KEY, InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
 
-	private ConfigScreenOpener () {}
+	private ConfigScreenOpener () {
+	}
 
 	public static KeyMapping keyMapping () {
 		return OPEN_CONFIG_SCREEN;
@@ -29,12 +30,10 @@ public final class ConfigScreenOpener {
 
 	public static boolean open (String modId) {
 		Minecraft minecraft = Minecraft.getInstance();
-		return ConfigScreens.create(modId, minecraft.gui.screen())
-			.map(screen -> {
-				minecraft.gui.setScreen(screen);
-				return true;
-			})
-			.orElse(false);
+		return ConfigScreens.create(modId, minecraft.gui.screen()).map(screen -> {
+			minecraft.gui.setScreen(screen);
+			return true;
+		}).orElse(false);
 	}
 
 }

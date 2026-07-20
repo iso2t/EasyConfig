@@ -10,7 +10,8 @@ public final class ConfigRegistry {
 
 	private static final Map<String, List<RegisteredConfig<?>>> CONFIGS = new LinkedHashMap<>();
 
-	private ConfigRegistry () {}
+	private ConfigRegistry () {
+	}
 
 	public static synchronized <T> RegisteredConfig<T> register (String modId, Component title, ConfigManager<T> manager, T config) {
 		Objects.requireNonNull(modId, "modId");

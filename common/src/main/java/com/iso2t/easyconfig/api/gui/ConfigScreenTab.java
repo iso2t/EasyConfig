@@ -10,10 +10,10 @@ import java.util.function.Supplier;
 
 public final class ConfigScreenTab<T> {
 
-	private final Component title;
-	private final Consumer<T> saveAction;
+	private final Component                 title;
+	private final Consumer<T>               saveAction;
 	private final Supplier<ConfigSchema<T>> reloadAction;
-	private ConfigSchema<T> schema;
+	private       ConfigSchema<T>           schema;
 
 	public ConfigScreenTab (Component title, ConfigSchema<T> schema, Consumer<T> saveAction, Supplier<ConfigSchema<T>> reloadAction) {
 		this.title = Objects.requireNonNull(title, "title");

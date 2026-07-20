@@ -1,7 +1,7 @@
 package com.iso2t.easyconfig.api.value.comment;
 
-import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.Comment;
+import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 
 import java.lang.reflect.Field;
 
@@ -13,8 +13,8 @@ import java.lang.reflect.Field;
  * <p>This provider does not produce any lines itself; it is only a marker.
  */
 public final class AutoCommentValueProvider implements CommentValueProvider<Object> {
-    @Override
-    public String[] getCommentLines (Field field, Object defaultValue) {
-        return new String[0];
-    }
+	@Override
+	public String[] getCommentLines (Field field, Object defaultValue) {
+		return new String[0];
+	}
 }

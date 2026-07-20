@@ -3,43 +3,30 @@ package com.iso2t.easyconfig.api.metadata;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
 
-import java.math.BigDecimal;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
 public final class ConfigEntry {
 
-	private final List<String> path;
-	private final String key;
-	private final String displayName;
+	private final List<String>    path;
+	private final String          key;
+	private final String          displayName;
 	private final ConfigEntryKind kind;
-	private final Field field;
-	private final Object owner;
-	private final Object defaultOwner;
-	private final Class<?> fieldType;
-	private final Class<?> valueType;
-	private final List<String> comments;
-	private final List<Object> allowedValues;
-	private final Object minValue;
-	private final Object maxValue;
-	private final boolean editable;
+	private final Field           field;
+	private final Object          owner;
+	private final Object          defaultOwner;
+	private final Class<?>        fieldType;
+	private final Class<?>        valueType;
+	private final List<String>    comments;
+	private final List<Object>    allowedValues;
+	private final Object          minValue;
+	private final Object          maxValue;
+	private final boolean         editable;
 
-	ConfigEntry (
-		List<String> path,
-		String key,
-		String displayName,
-		ConfigEntryKind kind,
-		Field field,
-		Object owner,
-		Object defaultOwner,
-		Class<?> valueType,
-		List<String> comments,
-		List<Object> allowedValues,
-		Object minValue,
-		Object maxValue
-	) {
+	ConfigEntry (List<String> path, String key, String displayName, ConfigEntryKind kind, Field field, Object owner, Object defaultOwner, Class<?> valueType, List<String> comments, List<Object> allowedValues, Object minValue, Object maxValue) {
 		this.path = List.copyOf(path);
 		this.key = key;
 		this.displayName = displayName;

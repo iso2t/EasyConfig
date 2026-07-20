@@ -6,7 +6,7 @@ public final class ConfigBuildOptions {
 
 	private static final ConfigBuildOptions DEFAULTS = new ConfigBuildOptions(true, null);
 
-	private final boolean registerScreen;
+	private final boolean   registerScreen;
 	private final Component screenTitle;
 
 	private ConfigBuildOptions (boolean registerScreen, Component screenTitle) {

@@ -22,7 +22,7 @@ public @interface Config {
 	 * and can be utilized in constructing configuration file paths or identifiers.
 	 *
 	 * @return the name specified in the configuration annotation. If no name is provided,
-	 *         the behavior depends on the consuming context (e.g., fallback to a default value if applicable).
+	 * the behavior depends on the consuming context (e.g., fallback to a default value if applicable).
 	 */
 	String name ();
 

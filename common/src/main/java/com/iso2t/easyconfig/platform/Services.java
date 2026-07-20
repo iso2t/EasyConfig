@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ServiceLoader;
 
 public class Services {
-	private static final Logger LOG = LoggerFactory.getLogger("EasyConfig Services");
-	public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
+	private static final Logger          LOG      = LoggerFactory.getLogger("EasyConfig Services");
+	public static final  IPlatformHelper PLATFORM = load(IPlatformHelper.class);
 
 	public static <T> T load (Class<T> clazz) {
 

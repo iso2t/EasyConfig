@@ -12,9 +12,9 @@ public class CharacterValue extends AbstractValue<Character> {
 	private CharacterValue (Character defaultValue) {
 		super(defaultValue);
 	}
-	
+
 	public static CharacterValue of (Character defaultValue) {
 		return new CharacterValue(defaultValue);
 	}
-	
+
 }

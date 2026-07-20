@@ -9,18 +9,15 @@ import com.iso2t.easyconfig.api.value.NumberRange;
 import com.iso2t.easyconfig.api.value.comment.*;
 import com.iso2t.easyconfig.api.value.wrappers.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public final class ConfigReflection {
 
-	private ConfigReflection () {}
+	private ConfigReflection () {
+	}
 
 	public static List<Field> configFields (Class<?> type) {
 		List<Field> fields = new ArrayList<>();

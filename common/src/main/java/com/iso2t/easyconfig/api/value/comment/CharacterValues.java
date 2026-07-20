@@ -19,8 +19,6 @@ public final class CharacterValues implements CommentValueProvider<Object> {
 
 	@Override
 	public String[] getCommentLines (Field field, Object defaultValue) {
-		return new String[] {
-				"Default: " + CommentFormat.value(defaultValue)
-		};
+		return new String[] { "Default: " + CommentFormat.value(defaultValue) };
 	}
 }

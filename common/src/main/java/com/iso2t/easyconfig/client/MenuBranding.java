@@ -11,7 +11,8 @@ public final class MenuBranding {
 
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 
-	private MenuBranding () {}
+	private MenuBranding () {
+	}
 
 	public static void render (TitleScreen screen, GuiGraphicsExtractor graphics) {
 		if (screen == null || graphics == null || EasyConfig.getConfig().SHOW_MAIN_MENU_BRANDING.get() == false) return;

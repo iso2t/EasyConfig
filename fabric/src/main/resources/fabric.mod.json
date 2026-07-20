@@ -1,54 +1,56 @@
 {
-    "schemaVersion": 1,
-    "id": "${mod_id}",
-    "version": "${version}",
-    "name": "${mod_name}",
-    "description": "${description}",
-    "authors": [
-        "${mod_author}"
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "https://iso2t.com/",
+    "sources": "https://github.com/iso2t/EasyConfig"
+  },
+  "license": "${license}",
+  "icon": "icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.iso2t.easyconfig.ECFabric"
     ],
-    "contact": {
-        "homepage": "https://fabricmc.net/",
-        "sources": "https://github.com/FabricMC/fabric-example-mod"
-    },
-    "license": "${license}",
-    "icon": "icon.png",
-    "environment": "*",
-    "entrypoints": {
-        "main": [
-          "com.iso2t.easyconfig.ECFabric"
-        ],
-        "client": [
-          "com.iso2t.easyconfig.ECFabricClient"
-        ],
-        "modmenu": [
-          "com.iso2t.easyconfig.client.FabricModMenuIntegration"
-        ]
-    },
-    "mixins": [
-        "${mod_id}.mixins.json",
-        "${mod_id}.fabric.mixins.json"
+    "client": [
+      "com.iso2t.easyconfig.ECFabricClient"
     ],
-    "depends": {
-        "fabricloader": ">=${fabric_loader_version}",
-        "fabric-api": "*",
-        "minecraft": "~${minecraft_version}",
-        "java": ">=${java_version}"
-    },
-    "recommends": {
-        "modmenu": "*"
-    },
-    "custom": {
-      "modmenu": {
-        "links": {
-          "modrinth": "https://modrinth.com/mod/${mod_id}",
-          "curseforge": "https://www.curseforge.com/minecraft/mc-mods/${mod_id}",
-          "modrinth-api": "https://api.modrinth.com/v2/mod/${mod_id}",
-          "curseforge-api": "https://api.curseforge.com/v1/mods/${mod_id}"
-        },
-        "badges": ["library"],
-        "icon": "icon.png"
-      }
+    "modmenu": [
+      "com.iso2t.easyconfig.client.FabricModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json",
+    "${mod_id}.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=${java_version}"
+  },
+  "recommends": {
+    "modmenu": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modrinth": "https://modrinth.com/mod/${mod_id}",
+        "curseforge": "https://www.curseforge.com/minecraft/mc-mods/${mod_id}",
+        "modrinth-api": "https://api.modrinth.com/v2/mod/${mod_id}",
+        "curseforge-api": "https://api.curseforge.com/v1/mods/${mod_id}"
+      },
+      "badges": [
+        "library"
+      ],
+      "icon": "icon.png"
     }
+  }
 }
   

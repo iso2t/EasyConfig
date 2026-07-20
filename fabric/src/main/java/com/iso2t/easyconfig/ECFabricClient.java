@@ -1,7 +1,7 @@
 package com.iso2t.easyconfig;
 
-import com.iso2t.easyconfig.client.FabricMenuBranding;
 import com.iso2t.easyconfig.client.FabricConfigScreenOpener;
+import com.iso2t.easyconfig.client.FabricMenuBranding;
 import net.fabricmc.api.ClientModInitializer;
 
 public class ECFabricClient implements ClientModInitializer {

@@ -20,16 +20,12 @@ public final class FabricModMenuIntegration implements ModMenuApi {
 	@Override
 	public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories () {
 		Map<String, ConfigScreenFactory<?>> factories = new LinkedHashMap<>();
-		ConfigRegistry.all().keySet().stream()
-			.filter(modId -> !Constants.MOD_ID.equals(modId))
-			.forEach(modId -> factories.put(modId, screenFactory(modId)));
+		ConfigRegistry.all().keySet().stream().filter(modId -> !Constants.MOD_ID.equals(modId)).forEach(modId -> factories.put(modId, screenFactory(modId)));
 		return factories;
 	}
 
 	private static ConfigScreenFactory<Screen> screenFactory (String modId) {
-		return parent -> ConfigScreens.create(modId, parent)
-			.map(Screen.class::cast)
-			.orElse(parent);
+		return parent -> ConfigScreens.create(modId, parent).map(Screen.class::cast).orElse(parent);
 	}
 
 }

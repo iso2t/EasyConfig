@@ -16,33 +16,33 @@ import com.iso2t.easyconfig.api.value.NumberRange;
  */
 public class FloatValue extends AbstractValue<Float> implements NumberRange<Float> {
 
-    private final Float min;
-    private final Float max;
+	private final Float min;
+	private final Float max;
 
 	private FloatValue (Float def, Float min, Float max) {
-        super(def);
-        this.min = min;
-        this.max = max;
-    }
+		super(def);
+		this.min = min;
+		this.max = max;
+	}
 
 	private FloatValue (Float def) {
 		this(def, Float.MIN_VALUE, Float.MAX_VALUE);
 	}
 
-    @Override
-    public Float getMin () {
-        return min;
-    }
+	@Override
+	public Float getMin () {
+		return min;
+	}
 
-    @Override
-    public Float getMax () {
-        return max;
-    }
-	
+	@Override
+	public Float getMax () {
+		return max;
+	}
+
 	public static FloatValue of (Float def) {
 		return new FloatValue(def);
 	}
-	
+
 	public static FloatValue of (Float def, Float min, Float max) {
 		return new FloatValue(def, min, max);
 	}

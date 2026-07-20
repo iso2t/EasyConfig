@@ -20,16 +20,16 @@ import java.util.Objects;
 
 public class ConfigScreen extends Screen {
 
-	private static final int HEADER_HEIGHT = 56;
-	private static final int FOOTER_HEIGHT = 36;
-	private static final int ROW_HEIGHT = 28;
-	private static final int FALLBACK_TEXT_COLOR = 0xFFFFFFFF;
+	private static final int HEADER_HEIGHT             = 56;
+	private static final int FOOTER_HEIGHT             = 36;
+	private static final int ROW_HEIGHT                = 28;
+	private static final int FALLBACK_TEXT_COLOR       = 0xFFFFFFFF;
 	private static final int FALLBACK_MUTED_TEXT_COLOR = 0xFFA0A0A0;
 
-	private final Screen parent;
+	private final Screen                   parent;
 	private final List<ConfigScreenTab<?>> tabs;
-	private int selectedTab;
-	private ConfigEntryList entryList;
+	private       int                      selectedTab;
+	private       ConfigEntryList          entryList;
 
 	public ConfigScreen (Screen parent, Component title, List<ConfigScreenTab<?>> tabs) {
 		super(title);
@@ -146,7 +146,7 @@ public class ConfigScreen extends Screen {
 
 	private final class ConfigEntryRow extends ContainerObjectSelectionList.Entry<ConfigEntryRow> {
 
-		private final ConfigEntry entry;
+		private final ConfigEntry          entry;
 		private final List<AbstractWidget> controls = new ArrayList<>();
 
 		private ConfigEntryRow (ConfigEntry entry) {
@@ -204,17 +204,12 @@ public class ConfigScreen extends Screen {
 
 		private AbstractWidget booleanControl () {
 			boolean value = Boolean.TRUE.equals(entry.value());
-			return CycleButton.onOffBuilder(value)
-				.displayOnlyValue()
-				.create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
+			return CycleButton.onOffBuilder(value).displayOnlyValue().create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
 		}
 
 		private AbstractWidget enumControl () {
 			List<Object> values = entry.allowedValues();
-			return CycleButton.builder(value -> Component.literal(String.valueOf(value)), entry.value())
-				.withValues(values)
-				.displayOnlyValue()
-				.create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
+			return CycleButton.builder(value -> Component.literal(String.valueOf(value)), entry.value()).withValues(values).displayOnlyValue().create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
 		}
 
 		private AbstractWidget textControl () {
@@ -229,7 +224,8 @@ public class ConfigScreen extends Screen {
 		}
 
 		private AbstractWidget readOnlyButton (String label) {
-			Button button = Button.builder(Component.literal(label), ignored -> {}).bounds(0, 0, controlWidth(), 20).build();
+			Button button = Button.builder(Component.literal(label), ignored -> {
+			}).bounds(0, 0, controlWidth(), 20).build();
 			button.active = false;
 			return button;
 		}

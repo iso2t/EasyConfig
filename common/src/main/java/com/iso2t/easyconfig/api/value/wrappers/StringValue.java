@@ -13,13 +13,13 @@ public class StringValue extends AbstractValue<String> {
 	private StringValue (String def) {
 		super(def);
 	}
-	
+
 	public static StringValue of (String def) {
 		return new StringValue(def);
 	}
-	
+
 	public static StringValue of (CharSequence def) {
 		return new StringValue(def.toString());
 	}
-	
+
 }

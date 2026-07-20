@@ -30,7 +30,8 @@ public class ModConfig {
 		public EnumValue<F3Side> F3_SIDE = EnumValue.of(F3Side.RIGHT);
 
 		public enum F3Side {
-			LEFT, RIGHT
+			LEFT,
+			RIGHT
 		}
 	}
 

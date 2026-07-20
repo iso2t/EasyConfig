@@ -7,7 +7,8 @@ import net.neoforged.neoforge.common.NeoForge;
 
 public final class NeoForgeConfigScreenOpener {
 
-	private NeoForgeConfigScreenOpener () {}
+	private NeoForgeConfigScreenOpener () {
+	}
 
 	public static void register (IEventBus modEventBus) {
 		modEventBus.addListener(NeoForgeConfigScreenOpener::registerKeyMappings);

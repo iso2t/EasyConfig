@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Inject(at = @At("TAIL"), method = "<init>")
-    private void init(CallbackInfo info) {
-        Constants.LOG.info("Loaded {} ({}) for Minecraft {} ({})", Constants.MOD_NAME, Constants.MOD_ID, SharedConstants.getCurrentVersion().name(), Services.PLATFORM.getPlatformName());
-    }
+	@Inject(at = @At("TAIL"), method = "<init>")
+	private void init (CallbackInfo info) {
+		Constants.LOG.info("Loaded {} ({}) for Minecraft {} ({})", Constants.MOD_NAME, Constants.MOD_ID, SharedConstants.getCurrentVersion().name(), Services.PLATFORM.getPlatformName());
+	}
 }

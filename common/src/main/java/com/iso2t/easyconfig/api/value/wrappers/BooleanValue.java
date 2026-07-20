@@ -15,9 +15,9 @@ public class BooleanValue extends AbstractValue<Boolean> {
 	private BooleanValue (boolean def) {
 		super(def);
 	}
-	
+
 	public static BooleanValue of (boolean def) {
 		return new BooleanValue(def);
 	}
-	
+
 }

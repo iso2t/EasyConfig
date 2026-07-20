@@ -11,7 +11,8 @@ import java.util.Optional;
 
 public final class ConfigScreens {
 
-	private ConfigScreens () {}
+	private ConfigScreens () {
+	}
 
 	public static boolean has (String modId) {
 		return ConfigRegistry.hasConfigs(modId);

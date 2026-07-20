@@ -59,7 +59,7 @@ public abstract class AbstractFileType {
 	 * This method performs deserialization by interpreting the data stored in the {@link ConfigNode}
 	 * and mapping it to the desired class type.
 	 *
-	 * @param <T> the target type to which the value will be converted
+	 * @param <T>  the target type to which the value will be converted
 	 * @param node the {@link ConfigNode} representing the value to be converted
 	 * @param type the {@link Class} object representing the target type
 	 * @return an instance of the specified type {@code T} created from the value in the {@link ConfigNode}

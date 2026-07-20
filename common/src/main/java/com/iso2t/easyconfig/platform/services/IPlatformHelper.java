@@ -66,18 +66,21 @@ public interface IPlatformHelper {
 
 	/**
 	 * Gets the config directory for the current platform.
+	 *
 	 * @return The config directory path.
 	 */
 	Path getConfigDir ();
 
 	/**
 	 * Gets the mods directory for the current platform.
+	 *
 	 * @return The mods directory path.
 	 */
 	Path getModsDir ();
 
 	/**
 	 * Gets the game directory for the current platform.
+	 *
 	 * @return The game directory path.
 	 */
 	Path getGameDir ();

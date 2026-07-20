@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 
 public class Constants {
 
-    public static final String MOD_ID = "easyconfig";
-    public static final String MOD_NAME = "EasyConfig";
+	public static final String MOD_ID      = "easyconfig";
+	public static final String MOD_NAME    = "EasyConfig";
 	public static final String MOD_VERSION = "26.1.0.0";
-    public static final Logger LOG = LoggerFactory.getLogger(MOD_NAME);
+	public static final Logger LOG         = LoggerFactory.getLogger(MOD_NAME);
 
 }

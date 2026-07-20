@@ -34,7 +34,7 @@ public @interface Comment {
 	 * {@link #provider()} will be used to provide the comment lines.
 	 *
 	 * @return {@code true} if dynamic comments based on the value are enabled;
-	 *         {@code false} otherwise.
+	 * {@code false} otherwise.
 	 */
 	boolean values () default true;
 
@@ -47,8 +47,8 @@ public @interface Comment {
 	 * based on the type of the annotated field or configuration element.
 	 *
 	 * @return the class of the {@link CommentValueProvider} to use,
-	 *         or {@code AutoCommentValueProvider.class} if the provider should
-	 *         be determined automatically.
+	 * or {@code AutoCommentValueProvider.class} if the provider should
+	 * be determined automatically.
 	 */
 	Class<? extends CommentValueProvider<?>> provider () default AutoCommentValueProvider.class;
 }

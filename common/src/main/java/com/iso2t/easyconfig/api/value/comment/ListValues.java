@@ -22,9 +22,6 @@ public final class ListValues implements CommentValueProvider<Object> {
 	@Override
 	public String[] getCommentLines (Field field, Object defaultValue) {
 		int size = defaultValue instanceof Collection<?> collection ? collection.size() : 0;
-		return new String[] {
-				"Default: " + CommentFormat.value(defaultValue),
-				"Size: " + size
-		};
+		return new String[] { "Default: " + CommentFormat.value(defaultValue), "Size: " + size };
 	}
 }

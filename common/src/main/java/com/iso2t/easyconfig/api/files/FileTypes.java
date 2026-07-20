@@ -37,7 +37,7 @@ public enum FileTypes {
 	 * the specific implementation of the file type.
 	 *
 	 * @return the {@link Class} object representing the subclass of {@link AbstractFileType}
-	 *         associated with this file type enumeration constant
+	 * associated with this file type enumeration constant
 	 */
 	public Class<? extends AbstractFileType> type () {
 		return type;

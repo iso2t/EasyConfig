@@ -16,33 +16,33 @@ import com.iso2t.easyconfig.api.value.NumberRange;
  */
 public class LongValue extends AbstractValue<Long> implements NumberRange<Long> {
 
-    private final Long min;
-    private final Long max;
+	private final Long min;
+	private final Long max;
 
 	private LongValue (Long def, Long min, Long max) {
-        super(def);
-        this.min = min;
-        this.max = max;
-    }
+		super(def);
+		this.min = min;
+		this.max = max;
+	}
 
 	private LongValue (Long def) {
 		this(def, Long.MIN_VALUE, Long.MAX_VALUE);
 	}
 
-    @Override
-    public Long getMin () {
-        return min;
-    }
+	@Override
+	public Long getMin () {
+		return min;
+	}
 
-    @Override
-    public Long getMax () {
-        return max;
-    }
-	
+	@Override
+	public Long getMax () {
+		return max;
+	}
+
 	public static LongValue of (Long def) {
 		return new LongValue(def);
 	}
-	
+
 	public static LongValue of (Long def, Long min, Long max) {
 		return new LongValue(def, min, max);
 	}

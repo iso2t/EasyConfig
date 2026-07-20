@@ -13,33 +13,33 @@ import com.iso2t.easyconfig.api.value.NumberRange;
  */
 public class DoubleValue extends AbstractValue<Double> implements NumberRange<Double> {
 
-    private final Double min;
-    private final Double max;
+	private final Double min;
+	private final Double max;
 
 	private DoubleValue (Double def, Double min, Double max) {
-        super(def);
-        this.min = min;
-        this.max = max;
-    }
+		super(def);
+		this.min = min;
+		this.max = max;
+	}
 
 	private DoubleValue (Double def) {
-        this(def, Double.MIN_VALUE, Double.MAX_VALUE);
-    }
+		this(def, Double.MIN_VALUE, Double.MAX_VALUE);
+	}
 
-    @Override
-    public Double getMin () {
-        return min;
-    }
+	@Override
+	public Double getMin () {
+		return min;
+	}
 
-    @Override
-    public Double getMax () {
-        return max;
-    }
-	
+	@Override
+	public Double getMax () {
+		return max;
+	}
+
 	public static DoubleValue of (Double def) {
 		return new DoubleValue(def);
 	}
-	
+
 	public static DoubleValue of (Double def, Double min, Double max) {
 		return new DoubleValue(def, min, max);
 	}

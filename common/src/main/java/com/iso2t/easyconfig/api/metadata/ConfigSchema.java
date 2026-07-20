@@ -5,8 +5,8 @@ import java.util.Optional;
 
 public final class ConfigSchema<T> {
 
-	private final Class<T> type;
-	private final T config;
+	private final Class<T>          type;
+	private final T                 config;
 	private final List<ConfigEntry> entries;
 
 	ConfigSchema (Class<T> type, T config, List<ConfigEntry> entries) {

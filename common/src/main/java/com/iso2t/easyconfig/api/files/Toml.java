@@ -43,9 +43,7 @@ public class Toml extends AbstractFileType implements ISupportsComments {
 			Files.createDirectories(parent);
 		}
 
-		try (BufferedWriter writer = Files.newBufferedWriter(file,
-				StandardOpenOption.CREATE,
-				StandardOpenOption.TRUNCATE_EXISTING)) {
+		try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 			writeRoot(root, writer);
 		}
 	}

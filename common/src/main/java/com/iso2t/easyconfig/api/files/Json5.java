@@ -34,17 +34,9 @@ public class Json5 extends AbstractFileType implements ISupportsComments {
 	public Json5 () {
 		super("json5");
 
-		JsonFactory factory = JsonFactory.builder()
-				.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
-				.enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
-				.enable(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES)
-				.enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS)
-				.enable(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS)
-				.enable(JsonReadFeature.ALLOW_TRAILING_COMMA)
-				.build();
+		JsonFactory factory = JsonFactory.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).enable(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES).enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS).enable(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS).enable(JsonReadFeature.ALLOW_TRAILING_COMMA).build();
 
-		mapper = new ObjectMapper(factory)
-				.enable(SerializationFeature.INDENT_OUTPUT);
+		mapper = new ObjectMapper(factory).enable(SerializationFeature.INDENT_OUTPUT);
 	}
 
 	@Override
@@ -61,9 +53,7 @@ public class Json5 extends AbstractFileType implements ISupportsComments {
 			Files.createDirectories(parent);
 		}
 
-		try (BufferedWriter writer = Files.newBufferedWriter(file,
-				StandardOpenOption.CREATE,
-				StandardOpenOption.TRUNCATE_EXISTING)) {
+		try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 			writeNode(root, writer, 0);
 			writer.newLine();
 		}

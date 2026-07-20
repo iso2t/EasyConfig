@@ -11,9 +11,6 @@ public final class ArrayValues implements CommentValueProvider<Object> {
 
 	@Override
 	public String[] getCommentLines (Field field, Object defaultValue) {
-		return new String[] {
-				"Default: " + CommentFormat.value(defaultValue),
-				"Length: " + CommentFormat.arrayLength(defaultValue)
-		};
+		return new String[] { "Default: " + CommentFormat.value(defaultValue), "Length: " + CommentFormat.arrayLength(defaultValue) };
 	}
 }

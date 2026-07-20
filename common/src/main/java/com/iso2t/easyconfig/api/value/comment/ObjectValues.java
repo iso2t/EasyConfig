@@ -15,16 +15,13 @@ import java.lang.reflect.Field;
  *   <li>The second comment line specifies the data type of the default value
  *       using {@link CommentFormat#type(Object)}.</li>
  * </ul>
- *
+ * <p>
  * This class is stateless, immutable, and thread-safe.
  */
 public final class ObjectValues implements CommentValueProvider<Object> {
 
 	@Override
 	public String[] getCommentLines (Field field, Object defaultValue) {
-		return new String[] {
-				"Default: " + CommentFormat.value(defaultValue),
-				"Type: " + CommentFormat.type(defaultValue)
-		};
+		return new String[] { "Default: " + CommentFormat.value(defaultValue), "Type: " + CommentFormat.type(defaultValue) };
 	}
 }

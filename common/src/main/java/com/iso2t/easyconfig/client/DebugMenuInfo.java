@@ -9,7 +9,8 @@ import java.util.List;
 
 public final class DebugMenuInfo {
 
-	private DebugMenuInfo () {}
+	private DebugMenuInfo () {
+	}
 
 	public static void add (List<String> leftLines, List<String> rightLines) {
 		var config = EasyConfig.getConfig();

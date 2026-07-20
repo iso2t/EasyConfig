@@ -26,18 +26,18 @@ import java.util.List;
  */
 public final class NumberValues implements CommentValueProvider<NumberRange<?>> {
 
-    @Override
-    public String[] getCommentLines(Field field, NumberRange<?> range) {
-        if (range == null) return new String[0];
+	@Override
+	public String[] getCommentLines (Field field, NumberRange<?> range) {
+		if (range == null) return new String[0];
 
-        List<String> lines = new ArrayList<>();
+		List<String> lines = new ArrayList<>();
 
-        if (range instanceof ConfigValue<?> cv) {
-            lines.add("Default: " + cv.get());
-        }
+		if (range instanceof ConfigValue<?> cv) {
+			lines.add("Default: " + cv.get());
+		}
 
-        lines.add("Min: " + range.getMin() + " | Max: " + range.getMax());
+		lines.add("Min: " + range.getMin() + " | Max: " + range.getMax());
 
-        return lines.toArray(new String[0]);
-    }
+		return lines.toArray(new String[0]);
+	}
 }

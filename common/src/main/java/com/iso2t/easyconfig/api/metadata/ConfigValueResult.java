@@ -3,8 +3,8 @@ package com.iso2t.easyconfig.api.metadata;
 public final class ConfigValueResult {
 
 	private final boolean success;
-	private final Object value;
-	private final String message;
+	private final Object  value;
+	private final String  message;
 
 	private ConfigValueResult (boolean success, Object value, String message) {
 		this.success = success;

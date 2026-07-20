@@ -13,14 +13,14 @@ import net.neoforged.fml.loading.FMLEnvironment;
 @Mod(Constants.MOD_ID)
 public class ECNeoForge {
 
-    public ECNeoForge (IEventBus eventBus, ModContainer modContainer) {
-        EasyConfig.init();
+	public ECNeoForge (IEventBus eventBus, ModContainer modContainer) {
+		EasyConfig.init();
 		if (FMLEnvironment.getDist() == Dist.CLIENT) {
 			NeoForgeMenuBranding.register();
 			NeoForgeConfigScreenOpener.register(eventBus);
 			eventBus.addListener(ECNeoForge::registerKnownConfigScreens);
 		}
-    }
+	}
 
 	private static void registerKnownConfigScreens (FMLClientSetupEvent event) {
 		NeoForgePlatformHelper.registerKnownConfigScreens();

@@ -32,11 +32,11 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue<E> {
 		E e = Enum.valueOf(enumClass, name);
 		super.set(e);
 	}
-	
+
 	public static <E extends Enum<E>> EnumValue<E> of (E defaultValue) {
 		return new EnumValue<>(defaultValue);
 	}
-	
+
 	public static <E extends Enum<E>> EnumValue<E> of (Class<E> enumClass, E defaultValue) {
 		return new EnumValue<>(enumClass, defaultValue);
 	}

@@ -21,13 +21,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
 	@Override
 	public List<String> getDependentMods (String modId) {
-		return FabricLoader.getInstance().getAllMods().stream()
-				.filter(mod -> mod.getMetadata().getDependencies().stream()
-						.anyMatch(dependency -> dependency.getKind() == ModDependency.Kind.DEPENDS
-								&& dependency.getModId().equals(modId)))
-				.map(mod -> mod.getMetadata().getId())
-				.distinct()
-				.toList();
+		return FabricLoader.getInstance().getAllMods().stream().filter(mod -> mod.getMetadata().getDependencies().stream().anyMatch(dependency -> dependency.getKind() == ModDependency.Kind.DEPENDS && dependency.getModId().equals(modId))).map(mod -> mod.getMetadata().getId()).distinct().toList();
 	}
 
 	@Override

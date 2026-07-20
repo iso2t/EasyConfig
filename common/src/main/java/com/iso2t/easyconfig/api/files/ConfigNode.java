@@ -1,12 +1,6 @@
 package com.iso2t.easyconfig.api.files;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents a configuration node that can store hierarchical data in the
@@ -42,10 +36,10 @@ public final class ConfigNode {
 
 	private static final ConfigNode NULL = new ConfigNode(Type.NULL, null, null, null);
 
-	private final Type type;
+	private final Type               type;
 	private final Map<String, Entry> entries;
-	private final List<ConfigNode> elements;
-	private final Object value;
+	private final List<ConfigNode>   elements;
+	private final Object             value;
 
 	private ConfigNode (Type type, Map<String, Entry> entries, List<ConfigNode> elements, Object value) {
 		this.type = type;
@@ -82,7 +76,7 @@ public final class ConfigNode {
 	 * @param value the scalar value to be encapsulated within the {@code ConfigNode}.
 	 *              This can be of any object type (e.g., String, Number, Boolean).
 	 * @return a new {@code ConfigNode} object of type {@code VALUE} if {@code value} is non-null;
-	 *         otherwise, a {@code NULL} node.
+	 * otherwise, a {@code NULL} node.
 	 */
 	public static ConfigNode value (Object value) {
 		if (value == null) return nullNode();
@@ -150,7 +144,7 @@ public final class ConfigNode {
 	 * Associates the specified key with the given {@code ConfigNode} in this object node.
 	 * If the provided {@code ConfigNode} is {@code null}, a {@code NULL} node is associated with the key instead.
 	 *
-	 * @param key the non-null key with which the specified {@code ConfigNode} is to be associated
+	 * @param key  the non-null key with which the specified {@code ConfigNode} is to be associated
 	 * @param node the {@code ConfigNode} to associate with the specified key; may be {@code null}
 	 */
 	public void put (String key, ConfigNode node) {
@@ -162,8 +156,8 @@ public final class ConfigNode {
 	 * along with additional comments. If the provided {@code ConfigNode} is {@code null},
 	 * a {@code NULL} node is associated with the key instead.
 	 *
-	 * @param key the non-null key with which the specified {@code ConfigNode} is to be associated
-	 * @param node the {@code ConfigNode} to associate with the specified key; may be {@code null}
+	 * @param key      the non-null key with which the specified {@code ConfigNode} is to be associated
+	 * @param node     the {@code ConfigNode} to associate with the specified key; may be {@code null}
 	 * @param comments a collection of comments to associate with the entry; may be {@code null} or empty
 	 */
 	public void put (String key, ConfigNode node, Collection<String> comments) {
@@ -177,7 +171,7 @@ public final class ConfigNode {
 	 *
 	 * @param key the key whose associated value is to be retrieved; must be non-null
 	 * @return the {@code ConfigNode} associated with the specified key if present and this node is of type {@code OBJECT};
-	 *         otherwise, a {@code NULL} node
+	 * otherwise, a {@code NULL} node
 	 */
 	public ConfigNode get (String key) {
 		if (!isObject()) return nullNode();
@@ -255,10 +249,10 @@ public final class ConfigNode {
 	 * {@code NULL} nodes return {@code null}.
 	 *
 	 * @return an {@code Object} representing the raw value of this node. This is either:
-	 *         - a {@code Map<String, Object>} if the node is of type {@code OBJECT},
-	 *         - a {@code List<Object>} if the node is of type {@code ARRAY},
-	 *         - the scalar value if the node is of type {@code VALUE},
-	 *         - or {@code null} if the node is of type {@code NULL}.
+	 * - a {@code Map<String, Object>} if the node is of type {@code OBJECT},
+	 * - a {@code List<Object>} if the node is of type {@code ARRAY},
+	 * - the scalar value if the node is of type {@code VALUE},
+	 * - or {@code null} if the node is of type {@code NULL}.
 	 */
 	public Object rawValue () {
 		return switch (type) {
@@ -327,8 +321,8 @@ public final class ConfigNode {
 	 * a value represented as a `ConfigNode`, and optional comments.
 	 */
 	public static final class Entry {
-		private final String key;
-		private final ConfigNode value;
+		private final String       key;
+		private final ConfigNode   value;
 		private final List<String> comments;
 
 		private Entry (String key, ConfigNode value, Collection<String> comments) {

@@ -13,7 +13,8 @@ import java.util.Objects;
 
 public final class NeoForgeConfigScreens {
 
-	private NeoForgeConfigScreens () {}
+	private NeoForgeConfigScreens () {
+	}
 
 	public static boolean hasRegisteredConfigs (ModContainer modContainer) {
 		Objects.requireNonNull(modContainer, "modContainer");
@@ -24,9 +25,7 @@ public final class NeoForgeConfigScreens {
 		Objects.requireNonNull(modContainer, "modContainer");
 		if (FMLEnvironment.getDist() != Dist.CLIENT) return;
 
-		IConfigScreenFactory screenFactory = (container, parent) -> ConfigScreens.create(container.getModId(), parent)
-			.map(Screen.class::cast)
-			.orElse(parent);
+		IConfigScreenFactory screenFactory = (container, parent) -> ConfigScreens.create(container.getModId(), parent).map(Screen.class::cast).orElse(parent);
 		modContainer.registerExtensionPoint(IConfigScreenFactory.class, screenFactory);
 	}
 
