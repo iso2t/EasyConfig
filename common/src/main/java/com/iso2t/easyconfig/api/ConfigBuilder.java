@@ -154,6 +154,7 @@ public class ConfigBuilder {
 
 		Component title = resolvedOptions.screenTitle() != null ? resolvedOptions.screenTitle() : defaultTabTitle(clazz, modid);
 		ConfigRegistry.register(modid, title, manager, config);
+		Services.PLATFORM.registerConfigScreen(modid);
 	}
 
 	private static Component defaultTabTitle (Class<?> clazz, String modid) {

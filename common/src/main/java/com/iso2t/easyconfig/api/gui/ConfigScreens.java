@@ -13,6 +13,10 @@ public final class ConfigScreens {
 
 	private ConfigScreens () {}
 
+	public static boolean has (String modId) {
+		return ConfigRegistry.hasConfigs(modId);
+	}
+
 	public static Optional<ConfigScreen> create (String modId, Screen parent) {
 		return create(modId, parent, Component.translatable("easyconfig.config_screen.title", modId));
 	}

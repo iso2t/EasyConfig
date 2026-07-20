@@ -23,8 +23,8 @@ public class ConfigScreen extends Screen {
 	private static final int HEADER_HEIGHT = 56;
 	private static final int FOOTER_HEIGHT = 36;
 	private static final int ROW_HEIGHT = 28;
-	private static final int TEXT_COLOR = ColorProvider.hexToInt(EasyConfig.getConfig().CONFIG_SCREEN.TEXT_COLOR.get());
-	private static final int MUTED_TEXT_COLOR = ColorProvider.hexToInt(EasyConfig.getConfig().CONFIG_SCREEN.MUTED_TEXT_COLOR.get());
+	private static final int FALLBACK_TEXT_COLOR = 0xFFFFFFFF;
+	private static final int FALLBACK_MUTED_TEXT_COLOR = 0xFFA0A0A0;
 
 	private final Screen parent;
 	private final List<ConfigScreenTab<?>> tabs;
@@ -52,7 +52,7 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public void extractRenderState (GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickProgress) {
-		graphics.centeredText(font, title, width / 2, 12, TEXT_COLOR);
+		graphics.centeredText(font, title, width / 2, 12, textColor());
 		super.extractRenderState(graphics, mouseX, mouseY, tickProgress);
 	}
 
@@ -164,7 +164,7 @@ public class ConfigScreen extends Screen {
 				return;
 			}
 
-			graphics.text(font, entry.displayName(), labelX, labelY, entry.editable() ? TEXT_COLOR : MUTED_TEXT_COLOR, false);
+			graphics.text(font, entry.displayName(), labelX, labelY, entry.editable() ? textColor() : mutedTextColor(), false);
 			for (AbstractWidget control : controls) {
 				placeControl(control);
 				control.extractRenderState(graphics, mouseX, mouseY, tickProgress);
@@ -223,7 +223,7 @@ public class ConfigScreen extends Screen {
 			box.setValue(String.valueOf(entry.value()));
 			box.setResponder(value -> {
 				ConfigValueResult result = entry.trySetValue(value);
-				box.setTextColor(result.success() ? TEXT_COLOR : 0xFFFF5555);
+				box.setTextColor(result.success() ? textColor() : 0xFFFF5555);
 			});
 			return box;
 		}
@@ -243,6 +243,24 @@ public class ConfigScreen extends Screen {
 			return Math.min(180, Math.max(120, getContentWidth() / 2));
 		}
 
+	}
+
+	private static int textColor () {
+		if (EasyConfig.getConfig() == null || EasyConfig.getConfig().CONFIG_SCREEN == null) return FALLBACK_TEXT_COLOR;
+		return parseColor(EasyConfig.getConfig().CONFIG_SCREEN.TEXT_COLOR.get(), FALLBACK_TEXT_COLOR);
+	}
+
+	private static int mutedTextColor () {
+		if (EasyConfig.getConfig() == null || EasyConfig.getConfig().CONFIG_SCREEN == null) return FALLBACK_MUTED_TEXT_COLOR;
+		return parseColor(EasyConfig.getConfig().CONFIG_SCREEN.MUTED_TEXT_COLOR.get(), FALLBACK_MUTED_TEXT_COLOR);
+	}
+
+	private static int parseColor (String color, int fallback) {
+		try {
+			return ColorProvider.hexToInt(color);
+		} catch (RuntimeException _) {
+			return fallback;
+		}
 	}
 
 }

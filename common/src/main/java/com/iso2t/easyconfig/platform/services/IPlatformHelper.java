@@ -39,6 +39,16 @@ public interface IPlatformHelper {
 	}
 
 	/**
+	 * Registers the platform-native config screen entry point for the given mod id, if supported.
+	 *
+	 * @param modId The mod id whose registered EasyConfig configs should be exposed.
+	 * @return True if the platform registered a native config screen entry point.
+	 */
+	default boolean registerConfigScreen (String modId) {
+		return false;
+	}
+
+	/**
 	 * Check if the game is currently in a development environment.
 	 *
 	 * @return True if in a development environment, false otherwise.
