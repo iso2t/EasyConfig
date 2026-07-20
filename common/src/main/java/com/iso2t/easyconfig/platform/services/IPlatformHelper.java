@@ -71,4 +71,22 @@ public interface IPlatformHelper {
 	 * @return The game directory path.
 	 */
 	Path getGameDir ();
+
+	/**
+	 * Determines whether the current platform is NeoForge.
+	 *
+	 * @return True if the platform is identified as "neoforge", false otherwise.
+	 */
+	default boolean isNeoForge () {
+		return getPlatformName().equals("neoforge");
+	}
+
+	/**
+	 * Determines whether the current platform is Fabric.
+	 *
+	 * @return True if the platform is identified as "fabric", false otherwise.
+	 */
+	default boolean isFabric () {
+		return getPlatformName().equals("fabric");
+	}
 }

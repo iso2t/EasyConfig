@@ -1,23 +1,19 @@
 package com.iso2t.easyconfig.api.manager;
 
-import com.iso2t.easyconfig.api.annotations.Comment;
-import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
-import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.files.AbstractFileType;
 import com.iso2t.easyconfig.api.files.ConfigNode;
 import com.iso2t.easyconfig.api.files.FileTypes;
 import com.iso2t.easyconfig.api.files.Json5;
-import com.iso2t.easyconfig.api.value.AbstractValue;
+import com.iso2t.easyconfig.api.metadata.ConfigIntrospector;
+import com.iso2t.easyconfig.api.metadata.ConfigSchema;
+import com.iso2t.easyconfig.api.reflect.ConfigReflection;
 import com.iso2t.easyconfig.api.value.ConfigValue;
-import com.iso2t.easyconfig.api.value.NumberRange;
-import com.iso2t.easyconfig.api.value.comment.*;
-import com.iso2t.easyconfig.api.value.wrappers.*;
+import com.iso2t.easyconfig.api.value.wrappers.ListValue;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -91,6 +87,40 @@ public class ConfigManager<T> {
 
 	}
 
+	public void loadInto (T config) {
+		T loaded = load();
+		try {
+			copyObject(loaded, config);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Failed to reload config " + file, e);
+		}
+	}
+
+	public void loadAndSaveInto (T config) {
+		loadInto(config);
+		save(config);
+	}
+
+	public ConfigSchema<T> schema (T config) {
+		return ConfigIntrospector.inspect(config);
+	}
+
+	public ConfigSchema<T> loadSchema () {
+		return schema(load());
+	}
+
+	public ConfigSchema<T> loadAndSaveSchema () {
+		return schema(loadAndSave());
+	}
+
+	public Class<T> type () {
+		return type;
+	}
+
+	public Path file () {
+		return file;
+	}
+
 	private ConfigNode readExistingRoot () throws IOException {
 		if (!Files.exists(file)) return null;
 		ConfigNode root = fileType.read(file);
@@ -141,20 +171,15 @@ public class ConfigManager<T> {
 	}
 
 	private <U> U instantiate (Class<U> cls) {
-		try {
-			return cls.getDeclaredConstructor().newInstance();
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("Failed to instantiate " + cls.getName(), e);
-		}
+		return ConfigReflection.instantiate(cls);
 	}
 
 	private void populate (Object obj, ConfigNode node) throws IOException, IllegalAccessException {
-		for (Field f : obj.getClass().getDeclaredFields()) {
-			f.setAccessible(true);
+		for (Field f : ConfigReflection.configFields(obj.getClass())) {
 			String key = f.getName().toLowerCase();
 			ConfigNode child = node.get(key);
 
-			if (isNestedConfig(f.getType())) {
+			if (ConfigReflection.isNestedConfig(f.getType())) {
 				populateNestedConfig(obj, f, child);
 				continue;
 			}
@@ -200,7 +225,7 @@ public class ConfigManager<T> {
 
 		Class<?> elemType = declaredElem;
 		if (ConfigValue.class.isAssignableFrom(declaredElem)) {
-			elemType = unwrapValueType(declaredElem);
+			elemType = ConfigReflection.unwrapValueType(declaredElem);
 		}
 
 		java.util.List<Object> built = new ArrayList<>();
@@ -222,7 +247,7 @@ public class ConfigManager<T> {
 	}
 
 	private Object parseListElement (ConfigNode elNode, Class<?> elemType) throws IOException, IllegalAccessException {
-		if (isNestedConfig(elemType)) {
+		if (ConfigReflection.isNestedConfig(elemType)) {
 			Object element = instantiate(elemType);
 			populate(element, elNode);
 			return element;
@@ -246,7 +271,7 @@ public class ConfigManager<T> {
 		@SuppressWarnings("unchecked") ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
 		if (!child.isNull()) {
 			try {
-				Object v = fileType.readValue(child, inferGenericType(f));
+				Object v = fileType.readValue(child, ConfigReflection.inferValueType(f));
 				cv.set(v);
 			} catch (IOException | RuntimeException _) {
 			}
@@ -260,48 +285,19 @@ public class ConfigManager<T> {
 		}
 	}
 
-	private Class<?> inferGenericType (Field f) {
-		Type gt = f.getGenericType();
-		if (gt instanceof ParameterizedType pt) {
-			Type[] args = pt.getActualTypeArguments();
-			if (args.length == 1 && args[0] instanceof Class<?> argClass) {
-				return argClass;
-			}
-		}
-
-		String typeName = f.getType().getSimpleName();
-		return switch (typeName) {
-			case "ArrayValue" -> f.getType().getComponentType();
-			case "BooleanValue" -> Boolean.class;
-			case "ByteValue" -> Byte.class;
-			case "CharacterValue" -> Character.class;
-			case "DoubleValue" -> Double.class;
-			case "EnumValue" -> Enum.class;
-			case "FloatValue" -> Float.class;
-			case "IntegerValue" -> Integer.class;
-			case "ListValue" -> java.util.List.class;
-			case "LongValue" -> Long.class;
-			case "ObjectValue" -> Object.class;
-			case "ShortValue" -> Short.class;
-			case "StringValue" -> String.class;
-			default -> throw new IllegalStateException("Unknown ConfigValue type " + typeName);
-		};
-	}
-
 	private ConfigNode buildObject (Object obj) throws IllegalAccessException {
 		ConfigNode object = ConfigNode.object();
 
-		for (Field f : obj.getClass().getDeclaredFields()) {
-			f.setAccessible(true);
+		for (Field f : ConfigReflection.configFields(obj.getClass())) {
 			String key = f.getName().toLowerCase();
-			object.put(key, buildFieldValue(obj, f), collectComments(f, obj));
+			object.put(key, buildFieldValue(obj, f), ConfigReflection.collectComments(f, obj));
 		}
 
 		return object;
 	}
 
 	private ConfigNode buildFieldValue (Object obj, Field f) throws IllegalAccessException {
-		if (isNestedConfig(f.getType())) {
+		if (ConfigReflection.isNestedConfig(f.getType())) {
 			Object nested = f.get(obj);
 			if (nested == null) {
 				nested = instantiate(f.getType());
@@ -327,148 +323,35 @@ public class ConfigManager<T> {
 			return array;
 		}
 
-		if (value != null && isNestedConfig(value.getClass())) {
+		if (value != null && ConfigReflection.isNestedConfig(value.getClass())) {
 			return buildObject(value);
 		}
 
 		return ConfigNode.value(value);
 	}
 
-	private List<String> collectComments (Field f, Object obj) {
-		List<String> comments = new ArrayList<>();
+	private void copyObject (Object source, Object target) throws IllegalAccessException {
+		for (Field field : ConfigReflection.configFields(source.getClass())) {
+			Object sourceValue = field.get(source);
 
-		Comment comment = f.getAnnotation(Comment.class);
-		if (comment != null) {
-			comments.addAll(List.of(comment.value()));
-		}
-
-		if (isNestedConfig(f.getType())) {
-			Comment typeComment = f.getType().getAnnotation(Comment.class);
-			if (typeComment != null) {
-				comments.addAll(List.of(typeComment.value()));
-			}
-		}
-
-		if (comment != null && comment.values()) {
-			appendValueComments(comments, f, obj, comment.provider());
-		}
-
-		return comments;
-	}
-
-	private void appendValueComments (List<String> comments, Field f, Object obj, Class<? extends CommentValueProvider<?>> providerClass) {
-		try {
-			Object fieldValue = f.get(obj);
-
-			if (providerClass == AutoCommentValueProvider.class) {
-				providerClass = detectProvider(f, fieldValue);
-			}
-
-			if (providerClass == null) return;
-
-			@SuppressWarnings("unchecked") CommentValueProvider<Object> provider = (CommentValueProvider<Object>) providerClass.getDeclaredConstructor().newInstance();
-			Object currentValue = fieldValue instanceof ConfigValue<?> cv ? cv.get() : fieldValue;
-
-			Object toPass = currentValue;
-			if (fieldValue != null) {
-				Class<?> expectedType = getProviderExpectedType(providerClass);
-				if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(currentValue)) {
-					toPass = fieldValue;
+			if (ConfigReflection.isNestedConfig(field.getType())) {
+				Object targetValue = field.get(target);
+				if (targetValue == null) {
+					targetValue = instantiate(field.getType());
+					field.set(target, targetValue);
 				}
+				copyObject(sourceValue, targetValue);
+				continue;
 			}
 
-			String[] providedComments = provider.getCommentLines(f, toPass);
-			if (providedComments != null) {
-				for (String providedComment : providedComments) {
-					if (providedComment != null) comments.add(providedComment);
-				}
+			Object targetValue = field.get(target);
+			if (sourceValue instanceof ConfigValue<?> sourceConfigValue && targetValue instanceof ConfigValue<?> targetConfigValue) {
+				@SuppressWarnings("unchecked") ConfigValue<Object> writable = (ConfigValue<Object>) targetConfigValue;
+				writable.set(sourceConfigValue.get());
+				continue;
 			}
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("Failed to invoke comment provider " + providerClass.getName(), e);
+
+			field.set(target, sourceValue);
 		}
-	}
-
-	private boolean isNestedConfig (Class<?> cls) {
-		if (cls == null) return false;
-		if (cls.isAnnotationPresent(Config.class)) return true;
-		if (cls.isPrimitive() || cls.isEnum() || cls.isArray()) return false;
-		if (cls.getName().startsWith("java.") || cls.getName().startsWith("javax.")) return false;
-		if (ConfigValue.class.isAssignableFrom(cls)) return false;
-		if (Collection.class.isAssignableFrom(cls)) return false;
-		try {
-			cls.getDeclaredConstructor();
-			return true;
-		} catch (NoSuchMethodException e) {
-			return false;
-		}
-	}
-
-	private Class<?> unwrapValueType (Class<?> wrapper) {
-		Type sup = wrapper.getGenericSuperclass();
-		if (sup instanceof ParameterizedType pt && pt.getRawType() == AbstractValue.class) {
-			Type t = pt.getActualTypeArguments()[0];
-			if (t instanceof Class<?> c) return c;
-		}
-		throw new IllegalStateException("Cannot unwrap wrapper type " + wrapper);
-	}
-
-	private Class<? extends CommentValueProvider<?>> detectProvider (Field f, Object fieldValue) {
-		Class<?> fieldType = f.getType();
-
-		if (NumberRange.class.isAssignableFrom(fieldType)) return NumberValues.class;
-		if (fieldValue instanceof NumberRange) return NumberValues.class;
-
-		if (fieldType.isEnum()) return EnumValues.class;
-		if (EnumValue.class.isAssignableFrom(fieldType)) return EnumValues.class;
-		if (fieldValue instanceof java.lang.Enum) return EnumValues.class;
-		if (fieldValue instanceof EnumValue) return EnumValues.class;
-
-		if (BooleanValue.class.isAssignableFrom(fieldType)) return BooleanValues.class;
-		if (fieldType == Boolean.class || fieldType == boolean.class) return BooleanValues.class;
-		if (fieldValue instanceof Boolean) return BooleanValues.class;
-
-		if (StringValue.class.isAssignableFrom(fieldType)) return StringValues.class;
-		if (CharSequence.class.isAssignableFrom(fieldType)) return StringValues.class;
-		if (fieldValue instanceof CharSequence) return StringValues.class;
-
-		if (CharacterValue.class.isAssignableFrom(fieldType)) return CharacterValues.class;
-		if (fieldType == Character.class || fieldType == char.class) return CharacterValues.class;
-		if (fieldValue instanceof Character) return CharacterValues.class;
-
-		if (ArrayValue.class.isAssignableFrom(fieldType)) return ArrayValues.class;
-		if (fieldType.isArray()) return ArrayValues.class;
-		if (fieldValue != null && fieldValue.getClass().isArray()) return ArrayValues.class;
-
-		if (ListValue.class.isAssignableFrom(fieldType)) return ListValues.class;
-		if (Collection.class.isAssignableFrom(fieldType)) return ListValues.class;
-		if (fieldValue instanceof Collection<?>) return ListValues.class;
-
-		if (ObjectValue.class.isAssignableFrom(fieldType)) return ObjectValues.class;
-		if (fieldValue instanceof ObjectValue<?>) return ObjectValues.class;
-
-		return null;
-	}
-
-	private Class<?> getProviderExpectedType (Class<?> cls) {
-		for (Type t : cls.getGenericInterfaces()) {
-			if (t instanceof ParameterizedType pt && pt.getRawType() == CommentValueProvider.class) {
-				return extractClass(pt.getActualTypeArguments()[0]);
-			}
-		}
-		Class<?> superCls = cls.getSuperclass();
-		if (superCls != null && superCls != Object.class) {
-			return getProviderExpectedType(superCls);
-		}
-		return Object.class;
-	}
-
-	private Class<?> extractClass (Type type) {
-		if (type instanceof Class<?> c) return c;
-		if (type instanceof ParameterizedType pt) return extractClass(pt.getRawType());
-		if (type instanceof WildcardType wt) {
-			Type[] bounds = wt.getUpperBounds();
-			if (bounds.length > 0) return extractClass(bounds[0]);
-		}
-		return Object.class;
 	}
 }

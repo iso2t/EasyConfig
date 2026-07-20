@@ -12,7 +12,7 @@ public final class DebugMenuInfo {
 	private DebugMenuInfo () {}
 
 	public static void add (List<String> leftLines, List<String> rightLines) {
-		ModConfig config = EasyConfig.getConfig();
+		var config = EasyConfig.getConfig();
 		if (config == null || config.DEBUG == null || !Boolean.TRUE.equals(config.DEBUG.SHOW_IN_F3.get())) {
 			return;
 		}

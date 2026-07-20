@@ -4,7 +4,9 @@ import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.files.AbstractFileType;
 import com.iso2t.easyconfig.api.files.FileTypes;
 import com.iso2t.easyconfig.api.manager.ConfigManager;
+import com.iso2t.easyconfig.api.registry.ConfigRegistry;
 import com.iso2t.easyconfig.platform.Services;
+import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 
@@ -26,7 +28,11 @@ public class ConfigBuilder {
 	 *                               loading, or if reflection-based initialization fails.
 	 */
 	public static <T> T build (Class<T> clazz, String modid) {
-		return build(clazz, modid, FileTypes.JSON5);
+		return build(clazz, modid, FileTypes.JSON5, ConfigBuildOptions.defaults());
+	}
+
+	public static <T> T build (Class<T> clazz, String modid, ConfigBuildOptions options) {
+		return build(clazz, modid, FileTypes.JSON5, options);
 	}
 
 	/**
@@ -47,8 +53,14 @@ public class ConfigBuilder {
 	 *                               or if reflection-based initialization fails.
 	 */
 	public static <T> T build (Class<T> clazz, String modid, FileTypes fileType) {
+		return build(clazz, modid, fileType, ConfigBuildOptions.defaults());
+	}
+
+	public static <T> T build (Class<T> clazz, String modid, FileTypes fileType, ConfigBuildOptions options) {
 		ConfigManager<T> manager = new ConfigManager<>(clazz, resolveConfigPath(clazz, modid, fileType.extension()), fileType);
-		return manager.loadAndSave();
+		T config = manager.loadAndSave();
+		registerIfNeeded(clazz, modid, manager, config, options);
+		return config;
 	}
 
 	/**
@@ -73,9 +85,15 @@ public class ConfigBuilder {
 	 *                               or reflection-based initialization.
 	 */
 	public static <T> T build (Class<T> clazz, String modid, Class<? extends AbstractFileType> fileType) {
+		return build(clazz, modid, fileType, ConfigBuildOptions.defaults());
+	}
+
+	public static <T> T build (Class<T> clazz, String modid, Class<? extends AbstractFileType> fileType, ConfigBuildOptions options) {
 		AbstractFileType type = instantiateFileType(fileType);
 		ConfigManager<T> manager = new ConfigManager<>(clazz, resolveConfigPath(clazz, modid, type.extension()), type);
-		return manager.loadAndSave();
+		T config = manager.loadAndSave();
+		registerIfNeeded(clazz, modid, manager, config, options);
+		return config;
 	}
 
 	/**
@@ -128,6 +146,59 @@ public class ConfigBuilder {
 			case SERVER -> "-server";
 			case COMMON -> "";
 		};
+	}
+
+	private static <T> void registerIfNeeded (Class<T> clazz, String modid, ConfigManager<T> manager, T config, ConfigBuildOptions options) {
+		ConfigBuildOptions resolvedOptions = options == null ? ConfigBuildOptions.defaults() : options;
+		if (!resolvedOptions.shouldRegisterScreen()) return;
+
+		Component title = resolvedOptions.screenTitle() != null ? resolvedOptions.screenTitle() : defaultTabTitle(clazz, modid);
+		ConfigRegistry.register(modid, title, manager, config);
+	}
+
+	private static Component defaultTabTitle (Class<?> clazz, String modid) {
+		Config config = clazz.getAnnotation(Config.class);
+		String name = clazz.getSimpleName();
+		if (name.endsWith("Config")) {
+			name = name.substring(0, name.length() - "Config".length());
+		}
+
+		if (name.isBlank() || name.equalsIgnoreCase("Mod")) {
+			name = config != null && config.side() != Side.COMMON ? sideName(config.side()) : modid;
+		} else if (config != null && config.side() != Side.COMMON) {
+			name = name + " " + sideName(config.side());
+		}
+
+		return Component.literal(humanize(name));
+	}
+
+	private static String sideName (Side side) {
+		return switch (side) {
+			case CLIENT -> "Client";
+			case SERVER -> "Server";
+			case COMMON -> "Common";
+		};
+	}
+
+	private static String humanize (String value) {
+		String normalized = value.replace('_', ' ').replace('-', ' ').trim();
+		if (normalized.isBlank()) return value;
+
+		StringBuilder result = new StringBuilder(normalized.length());
+		boolean upperNext = true;
+		for (int i = 0; i < normalized.length(); i++) {
+			char c = normalized.charAt(i);
+			if (Character.isWhitespace(c)) {
+				result.append(c);
+				upperNext = true;
+			} else if (upperNext) {
+				result.append(Character.toUpperCase(c));
+				upperNext = false;
+			} else {
+				result.append(Character.toLowerCase(c));
+			}
+		}
+		return result.toString();
 	}
 
 	/**

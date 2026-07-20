@@ -14,14 +14,7 @@ import java.util.List;
 @Mixin(DebugScreenOverlay.class)
 public class MixinDebugScreenOverlay {
 
-	@Inject(
-		method = "extractRenderState",
-		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;extractLines(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Ljava/util/List;Z)V",
-			ordinal = 0
-		)
-	)
+	@Inject(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;extractLines(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Ljava/util/List;Z)V", ordinal = 0))
 	private void addEasyConfigDebugInfo (GuiGraphicsExtractor graphics, CallbackInfo info, @Local(ordinal = 0) List<String> leftLines, @Local(ordinal = 1) List<String> rightLines) {
 		DebugMenuInfo.add(leftLines, rightLines);
 	}
