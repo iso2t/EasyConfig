@@ -7,7 +7,8 @@ package com.iso2t.easyconfig.api.files;
  * and access the associated file extension.
  */
 public enum FileTypes {
-	JSON5(Json5.class);
+	JSON5(Json5.class),
+	TOML(Toml.class);
 
 	private final Class<? extends AbstractFileType> type;
 

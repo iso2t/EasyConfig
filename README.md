@@ -144,6 +144,7 @@ You can pass a file type explicitly:
 import com.iso2t.easyconfig.api.files.FileTypes;
 
 ConfigBuilder.build(ExampleConfig.class, MOD_ID, FileTypes.JSON5);
+ConfigBuilder.build(ExampleConfig.class, MOD_ID, FileTypes.TOML);
 ```
 
 ## Nested Sections
