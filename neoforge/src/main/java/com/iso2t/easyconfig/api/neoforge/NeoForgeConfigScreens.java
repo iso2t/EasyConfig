@@ -1,6 +1,7 @@
 package com.iso2t.easyconfig.api.neoforge;
 
 import com.iso2t.easyconfig.api.gui.ConfigScreens;
+import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -22,7 +23,7 @@ public final class NeoForgeConfigScreens {
 		if (FMLEnvironment.getDist() != Dist.CLIENT) return;
 
 		IConfigScreenFactory screenFactory = (container, parent) -> ConfigScreens.create(container.getModId(), parent)
-			.map(screen -> (net.minecraft.client.gui.screens.Screen) screen)
+			.map(Screen.class::cast)
 			.orElse(parent);
 		modContainer.registerExtensionPoint(IConfigScreenFactory.class, screenFactory);
 	}
