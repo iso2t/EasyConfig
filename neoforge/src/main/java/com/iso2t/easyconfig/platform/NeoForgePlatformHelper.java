@@ -57,7 +57,19 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 	public static void registerKnownConfigScreens () {
 		if (FMLEnvironment.getDist() != Dist.CLIENT) return;
 
+		registerMinecraftOptionsScreen();
 		ConfigRegistry.all().keySet().forEach(NeoForgePlatformHelper::registerConfigScreenFor);
+	}
+
+	public static boolean registerMinecraftOptionsScreen () {
+		if (FMLEnvironment.getDist() != Dist.CLIENT) return false;
+
+		return ModList.get().getModContainerById("minecraft")
+			.map(container -> {
+				NeoForgeConfigScreens.registerMinecraftOptions(container);
+				return true;
+			})
+			.orElse(false);
 	}
 
     @Override
