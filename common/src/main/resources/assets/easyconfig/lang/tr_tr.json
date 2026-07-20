@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "EasyConfig ekranını aç",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "Kaydet",
+    "easyconfig.config_screen.reload":  "Yeniden yükle",
+    "easyconfig.config_screen.reset":  "Sıfırla",
+    "easyconfig.config_screen.done":  "Bitti"
+}

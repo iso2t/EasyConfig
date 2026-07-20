@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "開啟 EasyConfig 畫面",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "儲存",
+    "easyconfig.config_screen.reload":  "重新載入",
+    "easyconfig.config_screen.reset":  "重設",
+    "easyconfig.config_screen.done":  "完成"
+}

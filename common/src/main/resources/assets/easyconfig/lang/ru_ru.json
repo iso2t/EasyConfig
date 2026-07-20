@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "Открыть экран EasyConfig",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "Сохранить",
+    "easyconfig.config_screen.reload":  "Перезагрузить",
+    "easyconfig.config_screen.reset":  "Сбросить",
+    "easyconfig.config_screen.done":  "Готово"
+}

@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "EasyConfig画面を開く",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "保存",
+    "easyconfig.config_screen.reload":  "再読み込み",
+    "easyconfig.config_screen.reset":  "リセット",
+    "easyconfig.config_screen.done":  "完了"
+}

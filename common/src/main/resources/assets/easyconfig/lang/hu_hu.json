@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "EasyConfig képernyő megnyitása",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "Mentés",
+    "easyconfig.config_screen.reload":  "Újratöltés",
+    "easyconfig.config_screen.reset":  "Visszaállítás",
+    "easyconfig.config_screen.done":  "Kész"
+}

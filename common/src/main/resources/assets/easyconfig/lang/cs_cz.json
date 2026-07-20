@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "Otevřít obrazovku EasyConfig",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "Uložit",
+    "easyconfig.config_screen.reload":  "Znovu načíst",
+    "easyconfig.config_screen.reset":  "Resetovat",
+    "easyconfig.config_screen.done":  "Hotovo"
+}

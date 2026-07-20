@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "EasyConfig 화면 열기",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "저장",
+    "easyconfig.config_screen.reload":  "새로고침",
+    "easyconfig.config_screen.reset":  "초기화",
+    "easyconfig.config_screen.done":  "완료"
+}

@@ -1,0 +1,8 @@
+﻿{
+    "key.easyconfig.open_config_screen":  "Abrir tela do EasyConfig",
+    "easyconfig.config_screen.title":  "%s",
+    "easyconfig.config_screen.save":  "Salvar",
+    "easyconfig.config_screen.reload":  "Recarregar",
+    "easyconfig.config_screen.reset":  "Redefinir",
+    "easyconfig.config_screen.done":  "Concluído"
+}
