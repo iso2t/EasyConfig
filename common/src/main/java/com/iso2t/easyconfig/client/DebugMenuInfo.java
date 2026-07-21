@@ -22,7 +22,7 @@ public final class DebugMenuInfo {
 		addSeparator(target);
 
 		var children = Services.PLATFORM.getDependentModCount(Constants.MOD_ID);
-		target.add(String.format("%s %s (%s %s)", Constants.MOD_NAME, Constants.MOD_VERSION, children, children == 1 ? "mod" : "mods"));
+		target.add(String.format("%s (%s %s)", Constants.MOD_NAME, children, children == 1 ? "mod" : "mods"));
 	}
 
 	private static void addSeparator (List<String> lines) {

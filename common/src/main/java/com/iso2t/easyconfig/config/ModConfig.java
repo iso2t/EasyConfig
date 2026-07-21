@@ -1,13 +1,12 @@
 package com.iso2t.easyconfig.config;
 
-import com.iso2t.easyconfig.ColorProvider;
 import com.iso2t.easyconfig.Constants;
 import com.iso2t.easyconfig.api.Side;
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.value.wrappers.BooleanValue;
+import com.iso2t.easyconfig.api.value.wrappers.ColorValue;
 import com.iso2t.easyconfig.api.value.wrappers.EnumValue;
-import com.iso2t.easyconfig.api.value.wrappers.StringValue;
 
 @Config(name = Constants.MOD_ID, side = Side.CLIENT)
 public class ModConfig {
@@ -38,10 +37,10 @@ public class ModConfig {
 	public static class ConfigScreen {
 
 		@Comment(value = "The color of the text in the config screen", values = false)
-		public StringValue TEXT_COLOR = StringValue.of(ColorProvider.intToHex(0xFFFFFFFF));
+		public ColorValue TEXT_COLOR = ColorValue.of(0xFFFFFFFF);
 
 		@Comment(value = "The color of the muted text in the config screen", values = false)
-		public StringValue MUTED_TEXT_COLOR = StringValue.of(ColorProvider.intToHex(0xFFA0A0A0));
+		public ColorValue MUTED_TEXT_COLOR = ColorValue.of(0xFFA0A0A0);
 
 	}
 

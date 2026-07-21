@@ -4,6 +4,7 @@ public enum ConfigEntryKind {
 	SECTION,
 	BOOLEAN,
 	NUMBER,
+	COLOR,
 	ENUM,
 	STRING,
 	CHARACTER,
@@ -14,7 +15,7 @@ public enum ConfigEntryKind {
 
 	public boolean scalar () {
 		return switch (this) {
-			case BOOLEAN, NUMBER, ENUM, STRING, CHARACTER -> true;
+			case BOOLEAN, NUMBER, COLOR, ENUM, STRING, CHARACTER -> true;
 			case SECTION, LIST, ARRAY, OBJECT, UNKNOWN -> false;
 		};
 	}

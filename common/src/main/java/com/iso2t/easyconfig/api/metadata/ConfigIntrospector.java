@@ -57,6 +57,7 @@ public final class ConfigIntrospector {
 		Object value = raw instanceof ConfigValue<?> configValue ? configValue.get() : raw;
 
 		if (BooleanValue.class.isAssignableFrom(fieldType) || fieldType == Boolean.class || fieldType == boolean.class || value instanceof Boolean) return ConfigEntryKind.BOOLEAN;
+		if (ColorValue.class.isAssignableFrom(fieldType) || raw instanceof ColorValue) return ConfigEntryKind.COLOR;
 		if (NumberRange.class.isAssignableFrom(fieldType) || value instanceof Number) return ConfigEntryKind.NUMBER;
 		if (EnumValue.class.isAssignableFrom(fieldType) || fieldType.isEnum() || value instanceof Enum<?>) return ConfigEntryKind.ENUM;
 		if (StringValue.class.isAssignableFrom(fieldType) || CharSequence.class.isAssignableFrom(fieldType) || value instanceof CharSequence) return ConfigEntryKind.STRING;

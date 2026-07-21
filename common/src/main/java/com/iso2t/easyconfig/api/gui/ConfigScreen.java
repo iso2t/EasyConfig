@@ -1,10 +1,10 @@
 package com.iso2t.easyconfig.api.gui;
 
-import com.iso2t.easyconfig.ColorProvider;
 import com.iso2t.easyconfig.EasyConfig;
 import com.iso2t.easyconfig.api.metadata.ConfigEntry;
 import com.iso2t.easyconfig.api.metadata.ConfigEntryKind;
 import com.iso2t.easyconfig.api.metadata.ConfigValueResult;
+import com.iso2t.easyconfig.api.value.wrappers.ColorValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
@@ -25,6 +25,9 @@ public class ConfigScreen extends Screen {
 	private static final int ROW_HEIGHT                = 28;
 	private static final int FALLBACK_TEXT_COLOR       = 0xFFFFFFFF;
 	private static final int FALLBACK_MUTED_TEXT_COLOR = 0xFFA0A0A0;
+	private static final int CONTROL_SPACING          = 4;
+	private static final int COLOR_SWATCH_WIDTH       = 20;
+	private static final int RESET_BUTTON_WIDTH       = 20;
 
 	private final Screen                   parent;
 	private final List<ConfigScreenTab<?>> tabs;
@@ -148,6 +151,8 @@ public class ConfigScreen extends Screen {
 
 		private final ConfigEntry          entry;
 		private final List<AbstractWidget> controls = new ArrayList<>();
+		private final List<AbstractWidget> valueControls = new ArrayList<>();
+		private       Button               resetButton;
 
 		private ConfigEntryRow (ConfigEntry entry) {
 			this.entry = Objects.requireNonNull(entry, "entry");
@@ -165,9 +170,15 @@ public class ConfigScreen extends Screen {
 			}
 
 			graphics.text(font, entry.displayName(), labelX, labelY, entry.editable() ? textColor() : mutedTextColor(), false);
-			for (AbstractWidget control : controls) {
-				placeControl(control);
+			updateResetButton();
+			for (int i = 0; i < valueControls.size(); i++) {
+				AbstractWidget control = valueControls.get(i);
+				placeControl(control, i);
 				control.extractRenderState(graphics, mouseX, mouseY, tickProgress);
+			}
+			if (resetButton != null && resetButton.visible) {
+				placeResetButton();
+				resetButton.extractRenderState(graphics, mouseX, mouseY, tickProgress);
 			}
 		}
 
@@ -188,55 +199,153 @@ public class ConfigScreen extends Screen {
 
 		private void createControls () {
 			if (!entry.editable()) {
-				controls.add(readOnlyButton("Read only"));
+				addValueControl(readOnlyButton("Read only"));
 				return;
 			}
 
 			switch (entry.kind()) {
-				case BOOLEAN -> controls.add(booleanControl());
-				case ENUM -> controls.add(enumControl());
-				case NUMBER, STRING, CHARACTER -> controls.add(textControl());
-				case LIST, ARRAY, OBJECT, UNKNOWN -> controls.add(readOnlyButton("Unsupported"));
+				case BOOLEAN -> addValueControl(booleanControl());
+				case ENUM -> addValueControl(enumControl());
+				case COLOR -> addValueControls(colorControls());
+				case NUMBER, STRING, CHARACTER -> addValueControl(textControl());
+				case LIST, ARRAY, OBJECT, UNKNOWN -> addValueControl(readOnlyButton("Unsupported"));
 				case SECTION -> {
 				}
+			}
+
+			if (entry.scalarEditable()) {
+				resetButton = Button.builder(Component.literal("↺"), ignored -> resetEntry()).bounds(0, 0, RESET_BUTTON_WIDTH, 20).build();
+				updateResetButton();
+				controls.add(resetButton);
 			}
 		}
 
 		private AbstractWidget booleanControl () {
 			boolean value = Boolean.TRUE.equals(entry.value());
-			return CycleButton.onOffBuilder(value).displayOnlyValue().create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
+			return CycleButton.onOffBuilder(value).displayOnlyValue().create(0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> {
+				entry.trySetValue(selected);
+				updateResetButton();
+			});
 		}
 
 		private AbstractWidget enumControl () {
 			List<Object> values = entry.allowedValues();
-			return CycleButton.builder(value -> Component.literal(String.valueOf(value)), entry.value()).withValues(values).displayOnlyValue().create(0, 0, controlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> entry.trySetValue(selected));
+			return CycleButton.builder(value -> Component.literal(String.valueOf(value)), entry.value()).withValues(values).displayOnlyValue().create(0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> {
+				entry.trySetValue(selected);
+				updateResetButton();
+			});
 		}
 
 		private AbstractWidget textControl () {
-			EditBox box = new EditBox(font, 0, 0, controlWidth(), 20, Component.literal(entry.displayName()));
+			EditBox box = new EditBox(font, 0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()));
 			box.setMaxLength(256);
 			box.setValue(String.valueOf(entry.value()));
 			box.setResponder(value -> {
 				ConfigValueResult result = entry.trySetValue(value);
 				box.setTextColor(result.success() ? textColor() : 0xFFFF5555);
+				if (result.success()) updateResetButton();
 			});
 			return box;
 		}
 
+		private List<AbstractWidget> colorControls () {
+			Button[] swatch = new Button[1];
+			swatch[0] = Button.builder(colorPreview(entry.value()), ignored -> ConfigScreen.this.minecraft.gui.setScreen(new ColorPickerScreen(ConfigScreen.this, Component.literal(entry.displayName()), asColor(entry.value()), color -> {
+				ConfigValueResult result = entry.trySetValue(color);
+				if (result.success()) {
+					swatch[0].setMessage(colorPreview(color));
+					updateResetButton();
+				}
+			}))).bounds(0, 0, COLOR_SWATCH_WIDTH, 20).build();
+
+			return List.of(swatch[0]);
+		}
+
 		private AbstractWidget readOnlyButton (String label) {
 			Button button = Button.builder(Component.literal(label), ignored -> {
-			}).bounds(0, 0, controlWidth(), 20).build();
+			}).bounds(0, 0, valueControlWidth(), 20).build();
 			button.active = false;
 			return button;
 		}
 
-		private void placeControl (AbstractWidget control) {
-			control.setX(getContentRight() - controlWidth());
+		private void placeControl (AbstractWidget control, int index) {
+			if (entry.kind() == ConfigEntryKind.COLOR) {
+				control.setWidth(COLOR_SWATCH_WIDTH);
+				control.setX(valueControlRight() - COLOR_SWATCH_WIDTH);
+				control.setY(getContentYMiddle() - 10);
+				return;
+			}
+
+			if (valueControls.size() == 2) {
+				control.setWidth(index == 0 ? valueControlWidth() : COLOR_SWATCH_WIDTH);
+				control.setX(index == 0 ? valueControlRight() - valueControlWidth() : valueControlRight() - COLOR_SWATCH_WIDTH);
+				control.setY(getContentYMiddle() - 10);
+				return;
+			}
+
+			control.setWidth(valueControlWidth());
+			control.setX(valueControlRight() - valueControlWidth());
 			control.setY(getContentYMiddle() - 10);
+		}
+
+		private void placeResetButton () {
+			resetButton.setX(getContentRight() - RESET_BUTTON_WIDTH);
+			resetButton.setY(getContentYMiddle() - 10);
 		}
 
 		private int controlWidth () {
 			return Math.min(180, Math.max(120, getContentWidth() / 2));
+		}
+
+		private int valueControlWidth () {
+			return resetVisible() ? controlWidth() - RESET_BUTTON_WIDTH - CONTROL_SPACING : controlWidth();
+		}
+
+		private int valueControlRight () {
+			return resetVisible() ? getContentRight() - RESET_BUTTON_WIDTH - CONTROL_SPACING : getContentRight();
+		}
+
+		private Component colorPreview (Object value) {
+			int color = asColor(value);
+			return Component.literal("■").withStyle(style -> style.withColor(color & 0xFFFFFF));
+		}
+
+		private int asColor (Object value) {
+			if (value instanceof Number number) return number.intValue();
+			try {
+				return ColorValue.parseHex(String.valueOf(value));
+			} catch (RuntimeException _) {
+				return 0xFFFFFFFF;
+			}
+		}
+
+		private void addValueControl (AbstractWidget control) {
+			valueControls.add(control);
+			controls.add(control);
+		}
+
+		private void addValueControls (List<AbstractWidget> controls) {
+			for (AbstractWidget control : controls) {
+				addValueControl(control);
+			}
+		}
+
+		private void resetEntry () {
+			ConfigValueResult result = entry.tryResetValue();
+			if (result.success()) {
+				rebuildWidgets();
+			}
+		}
+
+		private void updateResetButton () {
+			if (resetButton == null) return;
+			boolean visible = resetVisible();
+			resetButton.visible = visible;
+			resetButton.active = visible;
+		}
+
+		private boolean resetVisible () {
+			return entry.scalarEditable() && !entry.isDefaultValue();
 		}
 
 	}
@@ -251,9 +360,10 @@ public class ConfigScreen extends Screen {
 		return parseColor(EasyConfig.getConfig().CONFIG_SCREEN.MUTED_TEXT_COLOR.get(), FALLBACK_MUTED_TEXT_COLOR);
 	}
 
-	private static int parseColor (String color, int fallback) {
+	private static int parseColor (Object color, int fallback) {
+		if (color instanceof Number number) return number.intValue();
 		try {
-			return ColorProvider.hexToInt(color);
+			return ColorValue.parseHex(String.valueOf(color));
 		} catch (RuntimeException _) {
 			return fallback;
 		}

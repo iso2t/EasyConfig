@@ -66,6 +66,7 @@ public final class ConfigReflection {
 			case "BooleanValue" -> Boolean.class;
 			case "ByteValue" -> Byte.class;
 			case "CharacterValue" -> Character.class;
+			case "ColorValue" -> Integer.class;
 			case "DoubleValue" -> Double.class;
 			case "EnumValue" -> Enum.class;
 			case "FloatValue" -> Float.class;
@@ -114,6 +115,9 @@ public final class ConfigReflection {
 
 		if (NumberRange.class.isAssignableFrom(fieldType)) return NumberValues.class;
 		if (fieldValue instanceof NumberRange) return NumberValues.class;
+
+		if (ColorValue.class.isAssignableFrom(fieldType)) return ColorValues.class;
+		if (fieldValue instanceof ColorValue) return ColorValues.class;
 
 		if (fieldType.isEnum()) return EnumValues.class;
 		if (EnumValue.class.isAssignableFrom(fieldType)) return EnumValues.class;

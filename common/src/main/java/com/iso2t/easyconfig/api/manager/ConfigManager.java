@@ -8,6 +8,7 @@ import com.iso2t.easyconfig.api.metadata.ConfigIntrospector;
 import com.iso2t.easyconfig.api.metadata.ConfigSchema;
 import com.iso2t.easyconfig.api.reflect.ConfigReflection;
 import com.iso2t.easyconfig.api.value.ConfigValue;
+import com.iso2t.easyconfig.api.value.SerializedConfigValue;
 import com.iso2t.easyconfig.api.value.wrappers.ListValue;
 
 import java.io.IOException;
@@ -271,9 +272,16 @@ public class ConfigManager<T> {
 	}
 
 	private void populateScalarValue (Object obj, Field f, ConfigNode child) throws IllegalAccessException {
-		@SuppressWarnings("unchecked") ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
+		Object raw = f.get(obj);
 		if (!child.isNull()) {
 			try {
+				if (raw instanceof SerializedConfigValue<?> serializedConfigValue) {
+					@SuppressWarnings("unchecked") SerializedConfigValue<Object> writable = (SerializedConfigValue<Object>) serializedConfigValue;
+					writable.deserialize(child.rawValue());
+					return;
+				}
+
+				@SuppressWarnings("unchecked") ConfigValue<Object> cv = (ConfigValue<Object>) raw;
 				Object v = fileType.readValue(child, ConfigReflection.inferValueType(f));
 				cv.set(v);
 			} catch (IOException | RuntimeException _) {
@@ -310,8 +318,13 @@ public class ConfigManager<T> {
 		}
 
 		if (ConfigValue.class.isAssignableFrom(f.getType())) {
-			@SuppressWarnings("unchecked") ConfigValue<Object> cv = (ConfigValue<Object>) f.get(obj);
-			return buildValue(cv.get());
+			Object raw = f.get(obj);
+			if (raw instanceof SerializedConfigValue<?> serializedConfigValue) {
+				return buildValue(serializedConfigValue.serialized());
+			}
+			if (raw instanceof ConfigValue<?> configValue) {
+				return buildValue(configValue.get());
+			}
 		}
 
 		return buildValue(f.get(obj));

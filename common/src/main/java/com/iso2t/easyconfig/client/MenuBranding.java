@@ -19,7 +19,7 @@ public final class MenuBranding {
 		var font = Minecraft.getInstance().font;
 		var isFabric = Services.PLATFORM.getPlatformName().equalsIgnoreCase("fabric");
 		var children = Services.PLATFORM.getDependentModCount(Constants.MOD_ID);
-		var text = String.format("%s %s (%s %s)", Constants.MOD_NAME, Constants.MOD_VERSION, children, children == 1 ? "mod" : "mods");
+		var text = String.format("%s (%s %s)", Constants.MOD_NAME, children, children == 1 ? "mod" : "mods");
 
 		int x = 2;
 		int y = screen.height - 10 - ((font.lineHeight + 1) * (isFabric ? 1 : 2));

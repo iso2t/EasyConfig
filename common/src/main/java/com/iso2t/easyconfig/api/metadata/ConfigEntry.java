@@ -2,12 +2,14 @@ package com.iso2t.easyconfig.api.metadata;
 
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
+import com.iso2t.easyconfig.api.value.wrappers.ColorValue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public final class ConfigEntry {
 
@@ -107,6 +109,10 @@ public final class ConfigEntry {
 		return readValue(defaultOwner, true);
 	}
 
+	public boolean isDefaultValue () {
+		return Objects.deepEquals(value(), defaultValue());
+	}
+
 	public ConfigValueResult validate (Object value) {
 		if (!editable) {
 			return ConfigValueResult.failure("Config entry " + path() + " is not editable");
@@ -119,6 +125,7 @@ public final class ConfigEntry {
 		return switch (kind) {
 			case BOOLEAN -> convertBoolean(value);
 			case NUMBER -> convertNumber(value);
+			case COLOR -> convertColor(value);
 			case ENUM -> convertEnum(value);
 			case STRING -> ConfigValueResult.success(value.toString());
 			case CHARACTER -> convertCharacter(value);
@@ -229,6 +236,18 @@ public final class ConfigEntry {
 			return ConfigValueResult.success(decimal);
 		} catch (ArithmeticException e) {
 			return ConfigValueResult.failure("Expected a " + targetType.getSimpleName() + " value for " + path());
+		}
+	}
+
+	private ConfigValueResult convertColor (Object value) {
+		if (value instanceof Number number) {
+			return ConfigValueResult.success(number.intValue());
+		}
+
+		try {
+			return ConfigValueResult.success(ColorValue.parseHex(value.toString()));
+		} catch (RuntimeException _) {
+			return ConfigValueResult.failure("Expected a hex color for " + path());
 		}
 	}
 
