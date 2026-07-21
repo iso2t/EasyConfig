@@ -3,4 +3,82 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.16.3' apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
     id 'net.neoforged.moddev' version '2.0.141' apply false
+    id 'me.modmuss50.mod-publish-plugin' version '2.1.1'
+}
+
+def publishValue = { String environmentName, String propertyName ->
+    providers.environmentVariable(environmentName).orElse(providers.gradleProperty(propertyName))
+}
+
+def publishFlag = { String environmentName, String propertyName ->
+    publishValue(environmentName, propertyName).map { it.toBoolean() }.orElse(false)
+}
+
+def hasValue = { provider ->
+    provider.isPresent() && !provider.get().isBlank()
+}
+
+def modrinthToken = publishValue('MODRINTH_TOKEN', 'modrinthToken')
+def modrinthProjectId = publishValue('MODRINTH_PROJECT_ID', 'modrinthProjectId')
+def curseForgeToken = publishValue('CURSEFORGE_API_KEY', 'curseforgeApiKey')
+def curseForgeProjectId = publishValue('CURSEFORGE_PROJECT_ID', 'curseforgeProjectId')
+def publishDryRun = publishFlag('PUBLISH_DRY_RUN', 'publishDryRun')
+
+publishMods {
+    changelog = publishValue('PUBLISH_CHANGELOG', 'publishChangelog').orElse("Release ${project.version}")
+    type = STABLE
+    dryRun = publishDryRun
+
+    def modrinthConfigured = hasValue(modrinthProjectId) && (hasValue(modrinthToken) || publishDryRun.get())
+    def curseForgeConfigured = hasValue(curseForgeProjectId) && (hasValue(curseForgeToken) || publishDryRun.get())
+
+    if (modrinthConfigured) {
+        def modrinthShared = modrinthOptions {
+            accessToken = modrinthToken
+            projectId = modrinthProjectId.get()
+            minecraftVersions.add(minecraft_version)
+        }
+
+        modrinth('modrinthFabric') {
+            from modrinthShared
+            displayName = "${mod_name} ${project.version} (${minecraft_version} Fabric)"
+            file project(':fabric')
+            modLoaders.add('fabric')
+            requires('fabric-api')
+            optional('modmenu')
+        }
+
+        modrinth('modrinthNeoForge') {
+            from modrinthShared
+            displayName = "${mod_name} ${project.version} (${minecraft_version} NeoForge)"
+            file project(':neoforge')
+            modLoaders.add('neoforge')
+        }
+    }
+
+    if (curseForgeConfigured) {
+        def curseForgeShared = curseforgeOptions {
+            accessToken = curseForgeToken
+            projectId = curseForgeProjectId.get()
+            minecraftVersions.add(minecraft_version)
+            client = true
+            server = true
+        }
+
+        curseforge('curseforgeFabric') {
+            from curseForgeShared
+            displayName = "${mod_name} ${project.version} (${minecraft_version} Fabric)"
+            file project(':fabric')
+            modLoaders.add('fabric')
+            requires('fabric-api')
+            optional('modmenu')
+        }
+
+        curseforge('curseforgeNeoForge') {
+            from curseForgeShared
+            displayName = "${mod_name} ${project.version} (${minecraft_version} NeoForge)"
+            file project(':neoforge')
+            modLoaders.add('neoforge')
+        }
+    }
 }
