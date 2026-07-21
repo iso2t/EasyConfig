@@ -3,6 +3,7 @@ package com.iso2t.easyconfig.api.reflect;
 import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.Config;
+import com.iso2t.easyconfig.api.annotations.Ignore;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
@@ -20,9 +21,13 @@ public final class ConfigReflection {
 	}
 
 	public static List<Field> configFields (Class<?> type) {
+		if (type.isAnnotationPresent(Ignore.class)) return List.of();
+
 		List<Field> fields = new ArrayList<>();
 		for (Field field : type.getDeclaredFields()) {
 			if (field.isSynthetic()) continue;
+			if (field.isAnnotationPresent(Ignore.class)) continue;
+			if (field.getType().isAnnotationPresent(Ignore.class)) continue;
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			field.setAccessible(true);

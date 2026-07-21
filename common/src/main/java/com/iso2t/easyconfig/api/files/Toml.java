@@ -17,6 +17,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a file type implementation for reading and writing TOML configuration files.
+ * This class provides functionality to parse TOML files into configuration nodes, convert
+ * values between nodes and object representations, and write configuration nodes back
+ * to TOML files, ensuring compliance with the TOML specification.
+ * <p>
+ * The class extends {@code AbstractFileType} and implements {@code ISupportsComments},
+ * making it suitable for file type handling in systems supporting hierarchical
+ * configurations with inline and multiline comments.
+ *
+ * @since 26.1.0.0
+ * @author iso2t
+ */
 public class Toml extends AbstractFileType implements ISupportsComments {
 	private static final Pattern BARE_KEY = Pattern.compile("[A-Za-z0-9_-]+");
 

@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
  * <p>
  * The JSON5 file type is implemented using Jackson's {@link ObjectMapper} and a customized
  * {@link JsonFactory} that enables JSON5-specific parsing and serialization options.
+ *
+ * @since 26.1.0.0
+ * @author iso2t
  */
 public class Json5 extends AbstractFileType implements ISupportsComments {
 	private static final Pattern UNQUOTED_KEY = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]*");
