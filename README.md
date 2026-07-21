@@ -2,34 +2,21 @@
 
 <p align="center">A class-based config API and in-game config screen for Minecraft mods.</p>
 
-## About
+EasyConfig makes it easy to create, modify, and share config files for your mod. With an easily accessible in-game config screen, users can adjust settings on the fly
+without having to manually edit config files.
 
-EasyConfig is for mods that need config files and an in-game config screen without maintaining separate config UI for each loader.
-
-Configs are defined as Java classes. EasyConfig builds the file, loads it, saves it, and registers the screen integration for Fabric or NeoForge.
+EasyConfig naturally integrates with NeoForge, not replacing their configs, but giving a cleaner alternative. For Fabric,
+EasyConfig integrates with ModMenu for in-game config access, while still remaining an optional dependency.
 
 ## What It Provides
 
 - One config API for Fabric and NeoForge.
 - In-game config screens for mods that use EasyConfig.
 - Tabs for mods with more than one config.
-- NeoForge config button integration.
 - Fabric Mod Menu integration.
 - Lower-level APIs for custom config loading, saving, and metadata.
 
-## Player Information
-
-If a mod uses EasyConfig, its config can be exposed in-game instead of requiring manual file edits. Depending on the loader and installed mods, players may see:
-
-- Config files in the Minecraft config folder
-- A config button in NeoForge's mod list
-- Config screens through Mod Menu on Fabric
-- EasyConfig branding on the title screen
-- Optional EasyConfig information in the F3 menu
-
-EasyConfig's own client config controls the title screen branding, F3 display, and config screen text colors.
-
-## Developer Setup
+## For Developers
 
 Add the Maven repository:
 
