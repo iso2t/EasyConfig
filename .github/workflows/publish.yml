@@ -8,6 +8,9 @@ on:
         required: false
         default: false
         type: boolean
+  release:
+    types:
+      - published
   push:
     tags:
       - 'v*'
