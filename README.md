@@ -33,7 +33,7 @@ Fabric:
 
 ```gradle
 dependencies {
-    modImplementation "com.iso2t.easyconfig:easyconfig-fabric-[minecraft version]:[mod version]"
+    modImplementation "com.iso2t.easyconfig:easyconfig-fabric-26.2:26.1.0.3"
 }
 ```
 
@@ -41,7 +41,7 @@ NeoForge:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-neoforge-[minecraft version]:[mod version]"
+    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.2:26.1.0.3"
 }
 ```
 
@@ -49,15 +49,18 @@ API only:
 
 ```gradle
 dependencies {
-    compileOnly "com.iso2t.easyconfig:easyconfig-api-[minecraft version]:[mod version]"
+    implementation "com.iso2t.easyconfig:api:1.1.3"
 }
 ```
+
+The Fabric and NeoForge artifacts include the API classes in the built mod jar. Use the standalone `api` artifact only when you want the Java config API without EasyConfig's Minecraft mod implementation or in-game screens.
 
 ## Creating a Config
 
 ```java
 import com.iso2t.easyconfig.api.Side;
 import com.iso2t.easyconfig.api.annotations.Comment;
+import com.iso2t.easyconfig.api.annotations.Ignore;
 import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.value.wrappers.BooleanValue;
 import com.iso2t.easyconfig.api.value.wrappers.EnumValue;
@@ -70,6 +73,9 @@ public class ExampleConfig {
 
     @Comment("Maximum entries to process")
     public IntegerValue maxEntries = IntegerValue.of(64, 1, 256);
+	
+    @Ignore // Ignored by the config builder
+    public IntegerValue maxAttempts = IntegerValue.of(10);
 
     @Comment("Feature mode")
     public EnumValue<Mode> mode = EnumValue.of(Mode.NORMAL);
@@ -97,7 +103,16 @@ public final class ExampleMod {
 }
 ```
 
-This loads the config, writes missing values, saves comments, and registers the config screen.
+This loads the config, writes missing values, and saves comments. When using the Fabric or NeoForge artifact, it also registers the config screen.
+
+Screen registration is handled by the EasyConfig mod artifacts. If you use the standalone Java API outside Minecraft, configure the config directory through `ConfigPlatform`.
+
+```java
+import com.iso2t.easyconfig.api.ConfigPlatform;
+import java.nio.file.Path;
+
+ConfigPlatform.configure(Path.of("config"), modId -> {});
+```
 
 ## Config Files
 
@@ -153,6 +168,8 @@ public static class Debug {
 ## Config Screens
 
 Configs created through `ConfigBuilder` are registered for screen support by default.
+
+Config screens are part of the Minecraft implementation, not the standalone Java API.
 
 Disable screen registration:
 
