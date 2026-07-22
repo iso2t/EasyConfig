@@ -1,15 +1,13 @@
 package com.iso2t.easyconfig.api;
 
-import net.minecraft.network.chat.Component;
-
 public final class ConfigBuildOptions {
 
 	private static final ConfigBuildOptions DEFAULTS = new ConfigBuildOptions(true, null);
 
-	private final boolean   registerScreen;
-	private final Component screenTitle;
+	private final boolean registerScreen;
+	private final String  screenTitle;
 
-	private ConfigBuildOptions (boolean registerScreen, Component screenTitle) {
+	private ConfigBuildOptions (boolean registerScreen, String screenTitle) {
 		this.registerScreen = registerScreen;
 		this.screenTitle = screenTitle;
 	}
@@ -26,19 +24,15 @@ public final class ConfigBuildOptions {
 		return new ConfigBuildOptions(registerScreen, screenTitle);
 	}
 
-	public ConfigBuildOptions screenTitle (Component screenTitle) {
-		return new ConfigBuildOptions(registerScreen, screenTitle);
-	}
-
 	public ConfigBuildOptions screenTitle (String screenTitle) {
-		return screenTitle(Component.literal(screenTitle));
+		return new ConfigBuildOptions(registerScreen, screenTitle);
 	}
 
 	public boolean shouldRegisterScreen () {
 		return registerScreen;
 	}
 
-	public Component screenTitle () {
+	public String screenTitle () {
 		return screenTitle;
 	}
 

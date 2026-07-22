@@ -1,7 +1,6 @@
 package com.iso2t.easyconfig.api.registry;
 
 import com.iso2t.easyconfig.api.manager.ConfigManager;
-import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -13,7 +12,7 @@ public final class ConfigRegistry {
 	private ConfigRegistry () {
 	}
 
-	public static synchronized <T> RegisteredConfig<T> register (String modId, Component title, ConfigManager<T> manager, T config) {
+	public static synchronized <T> RegisteredConfig<T> register (String modId, String title, ConfigManager<T> manager, T config) {
 		Objects.requireNonNull(modId, "modId");
 		Objects.requireNonNull(title, "title");
 		Objects.requireNonNull(manager, "manager");
@@ -31,10 +30,6 @@ public final class ConfigRegistry {
 
 		configs.add(registration);
 		return registration;
-	}
-
-	public static synchronized <T> RegisteredConfig<T> register (String modId, String title, ConfigManager<T> manager, T config) {
-		return register(modId, Component.literal(title), manager, config);
 	}
 
 	public static synchronized List<RegisteredConfig<?>> get (String modId) {

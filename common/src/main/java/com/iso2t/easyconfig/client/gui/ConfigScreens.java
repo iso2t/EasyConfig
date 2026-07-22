@@ -1,4 +1,4 @@
-package com.iso2t.easyconfig.api.gui;
+package com.iso2t.easyconfig.client.gui;
 
 import com.iso2t.easyconfig.api.registry.ConfigRegistry;
 import com.iso2t.easyconfig.api.registry.RegisteredConfig;
@@ -25,7 +25,7 @@ public final class ConfigScreens {
 	public static Optional<ConfigScreen> create (String modId, Screen parent, Component title) {
 		List<ConfigScreenTab<?>> tabs = new ArrayList<>();
 		for (RegisteredConfig<?> registration : ConfigRegistry.get(modId)) {
-			tabs.add(registration.asTab());
+			tabs.add(tab(registration));
 		}
 
 		if (tabs.isEmpty()) return Optional.empty();
@@ -38,6 +38,10 @@ public final class ConfigScreens {
 
 	public static ConfigScreen createOrThrow (String modId, Screen parent, Component title) {
 		return create(modId, parent, title).orElseThrow(() -> new IllegalStateException("No configs registered for " + modId));
+	}
+
+	private static <T> ConfigScreenTab<T> tab (RegisteredConfig<T> registration) {
+		return ConfigScreenTab.of(Component.literal(registration.title()), registration.manager(), registration.config());
 	}
 
 }

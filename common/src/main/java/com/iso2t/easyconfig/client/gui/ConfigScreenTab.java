@@ -1,4 +1,4 @@
-package com.iso2t.easyconfig.api.gui;
+package com.iso2t.easyconfig.client.gui;
 
 import com.iso2t.easyconfig.api.manager.ConfigManager;
 import com.iso2t.easyconfig.api.metadata.ConfigSchema;

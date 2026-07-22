@@ -6,8 +6,15 @@ plugins {
 import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.authentication.http.BasicAuthentication
 
+def apiProjectName = 'api'
+def isApiProject = project.name == apiProjectName
+
+if (isApiProject) {
+    version = api_version
+}
+
 base {
-    archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+    archivesName = isApiProject ? "${mod_id}-api" : "${mod_id}-${project.name}-${minecraft_version}"
 }
 
 java {
@@ -22,18 +29,53 @@ tasks.withType(Jar).configureEach {
     }
 }
 
+def apiProject = rootProject.findProject(":${apiProjectName}")
+if (apiProject != null && project != apiProject) {
+    dependencies {
+        api(project(':api')) {
+            def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+            attributes {
+                attribute(loaderAttribute, 'common')
+            }
+        }
+    }
+
+    apiProject.plugins.withId('java') {
+        tasks.named('jar', Jar) {
+            dependsOn(apiProject.tasks.named('classes'))
+            from(apiProject.sourceSets.main.output)
+        }
+
+        tasks.named('sourcesJar', Jar) {
+            dependsOn(apiProject.tasks.named('classes'))
+            from(apiProject.sourceSets.main.allSource)
+        }
+
+        tasks.named('javadoc', Javadoc).configure {
+            dependsOn(apiProject.tasks.named('classes'))
+            source(apiProject.sourceSets.main.allJava)
+            classpath += apiProject.sourceSets.main.compileClasspath
+        }
+    }
+}
+
 jar {
 
     manifest {
-        attributes([
+        def manifestAttributes = [
                 'Specification-Title'   : mod_name,
                 'Specification-Vendor'  : mod_author,
                 'Specification-Version' : project.jar.archiveVersion,
                 'Implementation-Title'  : project.name,
                 'Implementation-Version': project.jar.archiveVersion,
-                'Implementation-Vendor' : mod_author,
-                'Built-On-Minecraft'    : minecraft_version
-        ])
+                'Implementation-Vendor' : mod_author
+        ]
+
+        if (!isApiProject) {
+            manifestAttributes['Built-On-Minecraft'] = minecraft_version
+        }
+
+        attributes(manifestAttributes)
     }
 }
 
@@ -76,9 +118,13 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             groupId = "com.iso2t.${mod_id}"
-            artifactId = project.name == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-${project.name}-${minecraft_version}"
+            artifactId = isApiProject ? "api" : "${mod_id}-${project.name}-${minecraft_version}"
             version = project.version
             from components.java
+            if (!isApiProject) {
+                suppressPomMetadataWarningsFor('apiElements')
+                suppressPomMetadataWarningsFor('runtimeElements')
+            }
         }
     }
     repositories {

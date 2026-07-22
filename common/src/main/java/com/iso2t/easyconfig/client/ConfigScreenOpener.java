@@ -1,7 +1,7 @@
 package com.iso2t.easyconfig.client;
 
 import com.iso2t.easyconfig.Constants;
-import com.iso2t.easyconfig.api.gui.ConfigScreens;
+import com.iso2t.easyconfig.client.gui.ConfigScreens;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;

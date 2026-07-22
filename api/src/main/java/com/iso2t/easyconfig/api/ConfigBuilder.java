@@ -5,8 +5,6 @@ import com.iso2t.easyconfig.api.files.AbstractFileType;
 import com.iso2t.easyconfig.api.files.FileTypes;
 import com.iso2t.easyconfig.api.manager.ConfigManager;
 import com.iso2t.easyconfig.api.registry.ConfigRegistry;
-import com.iso2t.easyconfig.platform.Services;
-import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 
@@ -108,7 +106,7 @@ public class ConfigBuilder {
 	 * @return The resolved {@code Path} representing the complete configuration file location.
 	 */
 	private static Path resolveConfigPath (Class<?> clazz, String fallbackName, String extension) {
-		return Services.PLATFORM.getConfigDir().resolve(configFileName(clazz, fallbackName, extension));
+		return ConfigPlatform.configDir().resolve(configFileName(clazz, fallbackName, extension));
 	}
 
 	/**
@@ -152,12 +150,12 @@ public class ConfigBuilder {
 		ConfigBuildOptions resolvedOptions = options == null ? ConfigBuildOptions.defaults() : options;
 		if (!resolvedOptions.shouldRegisterScreen()) return;
 
-		Component title = resolvedOptions.screenTitle() != null ? resolvedOptions.screenTitle() : defaultTabTitle(clazz, modid);
+		String title = resolvedOptions.screenTitle() != null ? resolvedOptions.screenTitle() : defaultTabTitle(clazz, modid);
 		ConfigRegistry.register(modid, title, manager, config);
-		Services.PLATFORM.registerConfigScreen(modid);
+		ConfigPlatform.registerConfigScreen(modid);
 	}
 
-	private static Component defaultTabTitle (Class<?> clazz, String modid) {
+	private static String defaultTabTitle (Class<?> clazz, String modid) {
 		Config config = clazz.getAnnotation(Config.class);
 		String name = clazz.getSimpleName();
 		if (name.endsWith("Config")) {
@@ -170,7 +168,7 @@ public class ConfigBuilder {
 			name = name + " " + sideName(config.side());
 		}
 
-		return Component.literal(humanize(name));
+		return humanize(name);
 	}
 
 	private static String sideName (Side side) {

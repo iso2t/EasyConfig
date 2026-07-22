@@ -1,18 +1,16 @@
 package com.iso2t.easyconfig.api.registry;
 
-import com.iso2t.easyconfig.api.gui.ConfigScreenTab;
 import com.iso2t.easyconfig.api.manager.ConfigManager;
-import net.minecraft.network.chat.Component;
 
 public final class RegisteredConfig<T> {
 
 	private final String           modId;
 	private final String           key;
-	private final Component        title;
+	private final String           title;
 	private final ConfigManager<T> manager;
 	private final T                config;
 
-	RegisteredConfig (String modId, String key, Component title, ConfigManager<T> manager, T config) {
+	RegisteredConfig (String modId, String key, String title, ConfigManager<T> manager, T config) {
 		this.modId = modId;
 		this.key = key;
 		this.title = title;
@@ -28,7 +26,7 @@ public final class RegisteredConfig<T> {
 		return key;
 	}
 
-	public Component title () {
+	public String title () {
 		return title;
 	}
 
@@ -38,10 +36,6 @@ public final class RegisteredConfig<T> {
 
 	public T config () {
 		return config;
-	}
-
-	public ConfigScreenTab<T> asTab () {
-		return ConfigScreenTab.of(title, manager, config);
 	}
 
 }

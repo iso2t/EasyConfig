@@ -1,6 +1,6 @@
 package com.iso2t.easyconfig.api.neoforge;
 
-import com.iso2t.easyconfig.api.gui.ConfigScreens;
+import com.iso2t.easyconfig.client.gui.ConfigScreens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;

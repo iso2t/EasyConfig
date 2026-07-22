@@ -1,6 +1,5 @@
-package com.iso2t.easyconfig.api.gui;
+package com.iso2t.easyconfig.client.gui;
 
-import com.iso2t.easyconfig.EasyConfig;
 import com.iso2t.easyconfig.api.metadata.ConfigEntry;
 import com.iso2t.easyconfig.api.metadata.ConfigEntryKind;
 import com.iso2t.easyconfig.api.metadata.ConfigValueResult;
@@ -351,22 +350,11 @@ public class ConfigScreen extends Screen {
 	}
 
 	private static int textColor () {
-		if (EasyConfig.getConfig() == null || EasyConfig.getConfig().CONFIG_SCREEN == null) return FALLBACK_TEXT_COLOR;
-		return parseColor(EasyConfig.getConfig().CONFIG_SCREEN.TEXT_COLOR.get(), FALLBACK_TEXT_COLOR);
+		return FALLBACK_TEXT_COLOR;
 	}
 
 	private static int mutedTextColor () {
-		if (EasyConfig.getConfig() == null || EasyConfig.getConfig().CONFIG_SCREEN == null) return FALLBACK_MUTED_TEXT_COLOR;
-		return parseColor(EasyConfig.getConfig().CONFIG_SCREEN.MUTED_TEXT_COLOR.get(), FALLBACK_MUTED_TEXT_COLOR);
-	}
-
-	private static int parseColor (Object color, int fallback) {
-		if (color instanceof Number number) return number.intValue();
-		try {
-			return ColorValue.parseHex(String.valueOf(color));
-		} catch (RuntimeException _) {
-			return fallback;
-		}
+		return FALLBACK_MUTED_TEXT_COLOR;
 	}
 
 }
