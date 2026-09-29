@@ -16,6 +16,10 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.Objects;
 
 public class ConfigScreen extends Screen {
@@ -34,9 +38,9 @@ public class ConfigScreen extends Screen {
 	private       int                      selectedTab;
 	private       ConfigEntryList          entryList;
 	private Button saveButton;
-	private final java.util.Map<ConfigEntry, Component> inputErrors = new java.util.HashMap<>();
+	private final Map<ConfigEntry, Component> inputErrors = new HashMap<>();
 
-	public java.util.Optional<Component> validationError () {
+	public Optional<Component> validationError () {
 		return inputErrors.isEmpty() ? selectedTab().error() : java.util.Optional.of(inputErrors.values().iterator().next());
 	}
 
@@ -63,6 +67,7 @@ public class ConfigScreen extends Screen {
 	public void extractRenderState (GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickProgress) {
 		graphics.centeredText(font, title, width / 2, 12, textColor());
 		saveButton.active = selectedTab().editable() && validationError().isEmpty();
+		graphics.centeredText(font, font.plainSubstrByWidth(selectedTab().description().getString(), width - 16), width / 2, 54, FALLBACK_MUTED_TEXT_COLOR);
 		validationError().ifPresent(error -> graphics.centeredText(font, font.plainSubstrByWidth(error.getString(), width - 16), width / 2, height - 44, 0xFFFF5555));
 		super.extractRenderState(graphics, mouseX, mouseY, tickProgress);
 	}
@@ -91,8 +96,12 @@ public class ConfigScreen extends Screen {
 		}
 	}
 
+	private int headerHeight () {
+		return selectedTab().description().getString().isEmpty() ? HEADER_HEIGHT : HEADER_HEIGHT + 16;
+	}
+
 	private void addEntryList () {
-		entryList = new ConfigEntryList(minecraft, width, height - HEADER_HEIGHT - FOOTER_HEIGHT, HEADER_HEIGHT);
+		entryList = new ConfigEntryList(minecraft, width, height - headerHeight() - FOOTER_HEIGHT, headerHeight());
 		for (ConfigEntry entry : selectedTab().schema().entries()) {
 			entryList.addConfigEntry(entry);
 		}
@@ -123,7 +132,7 @@ public class ConfigScreen extends Screen {
 		if (validationError().isEmpty()) selectedTab().save();
 	}
 
-	protected void reloadSelected () {
+	public void reloadSelected () {
 		selectedTab().reload();
 		rebuildWidgets();
 	}
@@ -136,7 +145,7 @@ public class ConfigScreen extends Screen {
 		rebuildWidgets();
 	}
 
-	private ConfigScreenTab<?> selectedTab () {
+	public ConfigScreenTab<?> selectedTab () {
 		return tabs.get(selectedTab);
 	}
 
@@ -205,7 +214,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		public void visitWidgets (java.util.function.Consumer<AbstractWidget> widgetVisitor) {
+		public void visitWidgets (Consumer<AbstractWidget> widgetVisitor) {
 			controls.forEach(widgetVisitor);
 		}
 

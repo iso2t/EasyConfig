@@ -28,8 +28,6 @@ public final class ConfigEntry {
 	private final Object          maxValue;
 	private final boolean         syncable;
 	private final boolean         editable;
-	private Object boundValue;
-	private Object boundDefault;
 
 	ConfigEntry (List<String> path, String key, String displayName, ConfigEntryKind kind, Field field, Object owner, Object defaultOwner, Class<?> valueType, List<String> comments, List<Object> allowedValues, Object minValue, Object maxValue, boolean syncable) {
 		this.path = List.copyOf(path);
@@ -47,61 +45,6 @@ public final class ConfigEntry {
 		this.maxValue = maxValue;
 		this.syncable = syncable;
 		this.editable = kind != ConfigEntryKind.SECTION && (ConfigValue.class.isAssignableFrom(fieldType) || !Modifier.isFinal(field.getModifiers()));
-	}
-
-	private ConfigEntry (Builder builder) {
-		path = List.of(builder.key.split("\\."));
-		key = path.getLast();
-		displayName = key;
-		kind = builder.kind;
-		field = null;
-		owner = defaultOwner = null;
-		fieldType = valueType = builder.type;
-		comments = List.of();
-		allowedValues = valueType.isEnum() ? List.of(valueType.getEnumConstants()) : List.of();
-		minValue = builder.min;
-		maxValue = builder.max;
-		syncable = false;
-		editable = builder.editable && kind != ConfigEntryKind.SECTION;
-		boundValue = builder.value;
-		boundDefault = builder.defaultValue;
-		if (kind.scalar()) {
-			var current = convert(boundValue);
-			var defaults = convert(boundDefault);
-			if (current.failed() || defaults.failed()) throw new IllegalArgumentException("Invalid initial or default value for " + builder.key);
-			boundValue = current.value();
-			boundDefault = defaults.value();
-		}
-	}
-
-	/** Creates a detached draft entry; setting it never writes a file or live config. */
-	public static Builder builder (String key, Object value) {
-		return new Builder(key, value);
-	}
-
-	public static final class Builder {
-		private final String key;
-		private final Object value;
-		private final Class<?> type;
-		private ConfigEntryKind kind;
-		private Object defaultValue;
-		private Number min, max;
-		private boolean editable = true;
-
-		private Builder (String key, Object value) {
-			if (key == null || key.isBlank()) throw new IllegalArgumentException("Entry key is required");
-			this.key = key;
-			this.value = Objects.requireNonNull(value, "value");
-			defaultValue = value;
-			type = value instanceof Enum<?> e ? e.getDeclaringClass() : value.getClass();
-			kind = value instanceof Boolean ? ConfigEntryKind.BOOLEAN : value instanceof Number ? ConfigEntryKind.NUMBER : value instanceof Enum<?> ? ConfigEntryKind.ENUM : ConfigEntryKind.STRING;
-		}
-
-		public Builder defaultValue (Object value) { defaultValue = Objects.requireNonNull(value); return this; }
-		public Builder range (Number min, Number max) { this.min = min; this.max = max; return this; }
-		public Builder editable (boolean editable) { this.editable = editable; return this; }
-		public Builder kind (ConfigEntryKind kind) { this.kind = Objects.requireNonNull(kind); return this; }
-		public ConfigEntry build () { return new ConfigEntry(this); }
 	}
 
 	public List<String> pathSegments () {
@@ -124,7 +67,6 @@ public final class ConfigEntry {
 		return kind;
 	}
 
-	/** Returns null for a detached entry created with builder(). */
 	public Field field () {
 		return field;
 	}
@@ -230,10 +172,6 @@ public final class ConfigEntry {
 			throw new IllegalStateException("Config entry " + path() + " is not editable");
 		}
 
-		if (field == null) {
-			boundValue = value;
-			return;
-		}
 		try {
 			Object raw = field.get(owner);
 			if (raw instanceof ConfigValue<?> configValue) {
@@ -256,7 +194,6 @@ public final class ConfigEntry {
 	}
 
 	private Object readValue (Object targetOwner, boolean defaultValue) {
-		if (field == null) return defaultValue ? boundDefault : boundValue;
 		if (targetOwner == null) return null;
 
 		try {

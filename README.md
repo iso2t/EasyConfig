@@ -33,7 +33,7 @@ Fabric:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.6"
+    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.7"
 }
 ```
 
@@ -41,7 +41,7 @@ NeoForge:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.6"
+    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.7"
 }
 ```
 
@@ -49,7 +49,7 @@ API only:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:api:1.263.3.0"
+    implementation "com.iso2t.easyconfig:api:1.263.4.0"
 }
 ```
 
@@ -199,26 +199,28 @@ NeoForge uses the native mod-list config button. Fabric uses Mod Menu when it is
 
 ## Screens for externally managed settings
 
-Use detached entries when your mod owns config files or sends changes to a server:
+Controls are generated from annotated classes. `@Translation` supplies a label key,
+an optional tooltip key, and an optional prefix for lowercase enum value names.
+Nested classes create sections; typed value wrappers supply defaults and bounds.
 
 ```java
-var capacity = ConfigEntry.builder("capacity", currentCapacity)
-    .defaultValue(1000f).range(1f, 1000000f).editable(isOperator).build();
-var builder = new ConfigScreenBuilder(Component.translatable("my_mod.settings"))
-    .parent(parent).editable(isOperator)
-    .add(capacity, Component.translatable("my_mod.capacity"), Component.translatable("my_mod.capacity.help"))
-    .onSave(() -> sendToServer((float) capacity.value()));
-Screen screen = builder.build();
+@Config(name = "flight", side = Side.CLIENT)
+public class FlightConfig {
+    @Translation(value = "my_mod.lift", tooltip = "my_mod.lift.tooltip")
+    public final FloatValue lift = FloatValue.of(.15f, 0f, 1f);
+}
+
+var tab = new ConfigScreenTab<>(title, ConfigIntrospector.inspect(draft),
+        this::saveSettings, () -> ConfigIntrospector.inspect(loadDraft()));
+var screen = new ConfigScreen(parent, title, List.of(tab));
 ```
 
-`ConfigEntry` is in `com.iso2t.easyconfig.api.metadata`; `ConfigScreenBuilder` is in
-`com.iso2t.easyconfig.client.gui`. Draft entries do not register configs, touch files, or synchronize themselves.
-The caller must still validate permissions and values on the server.
-
-Use `.validation(() -> Optional<Component>)` for cross-field errors: a present message blocks Save. Invalid numeric
-input also blocks Save. `.onReload(() -> createFreshScreen())` rebuilds from the caller's latest snapshot. Closing
-the screen does not invoke Save. `.valueLabel(entry, value -> Component)` supplies translated enum values.
-`.description(Component)` adds a section or informational row. Existing class-based configs continue to work.
+Use an independent draft when changes must wait for Save. The save callback receives
+the current draft; reload replaces it. `validation(config -> Optional<Component>)`
+can reject relationships between fields, and `editable(() -> allowed)` disables
+editing and saving for read-only views. File storage and networking remain with the
+consumer when using these callbacks. Normal `ConfigBuilder` registration continues
+to use EasyConfig's file-backed manager.
 
 ## Manual Control
 
