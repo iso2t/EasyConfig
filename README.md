@@ -49,7 +49,7 @@ API only:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:api:1.2.0"
+    implementation "com.iso2t.easyconfig:api:1.263.2.0"
 }
 ```
 
