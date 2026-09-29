@@ -33,7 +33,7 @@ Fabric:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.4"
+    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.5"
 }
 ```
 
@@ -41,7 +41,7 @@ NeoForge:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.4"
+    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.5"
 }
 ```
 
@@ -49,7 +49,7 @@ API only:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:api:1.263.2.0"
+    implementation "com.iso2t.easyconfig:api:1.263.3.0"
 }
 ```
 
@@ -196,6 +196,29 @@ ConfigBuilder.build(
 Multiple configs registered under the same mod id appear as tabs.
 
 NeoForge uses the native mod-list config button. Fabric uses Mod Menu when it is installed.
+
+## Screens for externally managed settings
+
+Use detached entries when your mod owns config files or sends changes to a server:
+
+```java
+var capacity = ConfigEntry.builder("capacity", currentCapacity)
+    .defaultValue(1000f).range(1f, 1000000f).editable(isOperator).build();
+var builder = new ConfigScreenBuilder(Component.translatable("my_mod.settings"))
+    .parent(parent).editable(isOperator)
+    .add(capacity, Component.translatable("my_mod.capacity"), Component.translatable("my_mod.capacity.help"))
+    .onSave(() -> sendToServer((float) capacity.value()));
+Screen screen = builder.build();
+```
+
+`ConfigEntry` is in `com.iso2t.easyconfig.api.metadata`; `ConfigScreenBuilder` is in
+`com.iso2t.easyconfig.client.gui`. Draft entries do not register configs, touch files, or synchronize themselves.
+The caller must still validate permissions and values on the server.
+
+Use `.validation(() -> Optional<Component>)` for cross-field errors: a present message blocks Save. Invalid numeric
+input also blocks Save. `.onReload(() -> createFreshScreen())` rebuilds from the caller's latest snapshot. Closing
+the screen does not invoke Save. `.valueLabel(entry, value -> Component)` supplies translated enum values.
+`.description(Component)` adds a section or informational row. Existing class-based configs continue to work.
 
 ## Manual Control
 

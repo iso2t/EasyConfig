@@ -65,6 +65,13 @@ public final class ConfigEntry {
 		editable = builder.editable && kind != ConfigEntryKind.SECTION;
 		boundValue = builder.value;
 		boundDefault = builder.defaultValue;
+		if (kind.scalar()) {
+			var current = convert(boundValue);
+			var defaults = convert(boundDefault);
+			if (current.failed() || defaults.failed()) throw new IllegalArgumentException("Invalid initial or default value for " + builder.key);
+			boundValue = current.value();
+			boundDefault = defaults.value();
+		}
 	}
 
 	/** Creates a detached draft entry; setting it never writes a file or live config. */
@@ -175,6 +182,10 @@ public final class ConfigEntry {
 			return ConfigValueResult.failure("Config entry " + path() + " is not editable");
 		}
 
+		return convert(value);
+	}
+
+	private ConfigValueResult convert (Object value) {
 		if (value == null) {
 			return ConfigValueResult.failure("Config entry " + path() + " does not accept null values");
 		}
@@ -293,8 +304,8 @@ public final class ConfigEntry {
 			if (targetType == Short.class) return ConfigValueResult.success(decimal.shortValueExact());
 			if (targetType == Integer.class) return ConfigValueResult.success(decimal.intValueExact());
 			if (targetType == Long.class) return ConfigValueResult.success(decimal.longValueExact());
-			if (targetType == Float.class) return ConfigValueResult.success(decimal.floatValue());
-			if (targetType == Double.class) return ConfigValueResult.success(decimal.doubleValue());
+			if (targetType == Float.class) return Float.isFinite(decimal.floatValue()) ? ConfigValueResult.success(decimal.floatValue()) : ConfigValueResult.failure("Float overflow for " + path());
+			if (targetType == Double.class) return Double.isFinite(decimal.doubleValue()) ? ConfigValueResult.success(decimal.doubleValue()) : ConfigValueResult.failure("Double overflow for " + path());
 			return ConfigValueResult.success(decimal);
 		} catch (ArithmeticException e) {
 			return ConfigValueResult.failure("Expected a " + targetType.getSimpleName() + " value for " + path());
