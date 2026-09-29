@@ -33,7 +33,7 @@ public final class NeoForgeConfigScreens {
 		Objects.requireNonNull(modContainer, "modContainer");
 		if (FMLEnvironment.getDist() != Dist.CLIENT) return;
 
-		IConfigScreenFactory screenFactory = (_, parent) -> new OptionsScreen(parent, Minecraft.getInstance().options, false);
+		IConfigScreenFactory screenFactory = (_, parent) -> new OptionsScreen(parent, Minecraft.getInstance().options);
 		modContainer.registerExtensionPoint(IConfigScreenFactory.class, screenFactory);
 	}
 
