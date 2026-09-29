@@ -1,8 +1,8 @@
 ﻿{
-    "key.easyconfig.open_config_screen":  "EasyConfig-Bildschirm öffnen",
-    "easyconfig.config_screen.title":  "%s",
-    "easyconfig.config_screen.save":  "Speichern",
-    "easyconfig.config_screen.reload":  "Neu laden",
-    "easyconfig.config_screen.reset":  "Zurücksetzen",
-    "easyconfig.config_screen.done":  "Fertig"
+  "key.easyconfig.open_config_screen": "EasyConfig-Bildschirm öffnen",
+  "easyconfig.config_screen.title": "%s",
+  "easyconfig.config_screen.save": "Speichern",
+  "easyconfig.config_screen.reload": "Neu laden",
+  "easyconfig.config_screen.reset": "Zurücksetzen",
+  "easyconfig.config_screen.done": "Fertig"
 }

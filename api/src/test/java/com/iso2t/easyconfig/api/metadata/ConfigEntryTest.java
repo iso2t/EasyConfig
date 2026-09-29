@@ -3,7 +3,10 @@ package com.iso2t.easyconfig.api.metadata;
 import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.annotations.Ignore;
 import com.iso2t.easyconfig.api.annotations.Translation;
-import com.iso2t.easyconfig.api.value.wrappers.*;
+import com.iso2t.easyconfig.api.value.wrappers.ColorValue;
+import com.iso2t.easyconfig.api.value.wrappers.EnumValue;
+import com.iso2t.easyconfig.api.value.wrappers.FloatValue;
+import com.iso2t.easyconfig.api.value.wrappers.IntegerValue;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +14,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigEntryTest {
-	@Test void nestedFieldsConvertValidateAndReset () {
+	@Test
+	void nestedFieldsConvertValidateAndReset () {
 		var config = new Example();
 		config.flight.lift.set(.2f);
 		var entry = ConfigIntrospector.inspect(config).find("flight.lift").orElseThrow();
@@ -26,7 +30,8 @@ class ConfigEntryTest {
 		assertTrue(entry.isDefaultValue());
 	}
 
-	@Test void finalScalarsAreReadOnly () {
+	@Test
+	void finalScalarsAreReadOnly () {
 		var entry = ConfigIntrospector.inspect(new Example()).find("readonly").orElseThrow();
 		assertEquals(1200f, entry.value());
 		assertFalse(entry.editable());
@@ -34,7 +39,8 @@ class ConfigEntryTest {
 		assertTrue(entry.tryResetValue().failed());
 	}
 
-	@Test void integersRejectFractionsAndOverflow () {
+	@Test
+	void integersRejectFractionsAndOverflow () {
 		var entry = ConfigIntrospector.inspect(new Example()).find("offset").orElseThrow();
 		assertTrue(entry.trySetValue("12").success());
 		assertTrue(entry.trySetValue("12.5").failed());
@@ -42,13 +48,15 @@ class ConfigEntryTest {
 		assertEquals(12, entry.value());
 	}
 
-	@Test void numericConversionRejectsOverflowWithoutExplicitBounds () {
+	@Test
+	void numericConversionRejectsOverflowWithoutExplicitBounds () {
 		var schema = ConfigIntrospector.inspect(new Example());
 		assertTrue(schema.find("unboundedfloat").orElseThrow().trySetValue("1e100").failed());
 		assertTrue(schema.find("unboundeddouble").orElseThrow().trySetValue("1e1000").failed());
 	}
 
-	@Test void enumsAndColorsUseTheirControls () {
+	@Test
+	void enumsAndColorsUseTheirControls () {
 		var config = new Example();
 		var schema = ConfigIntrospector.inspect(config);
 		var choice = schema.find("mode").orElseThrow();
@@ -61,7 +69,8 @@ class ConfigEntryTest {
 		assertEquals(0x123456, config.color.get() & 0xFFFFFF);
 	}
 
-	@Test void annotationsRemainAvailableWithoutExposingIgnoredState () {
+	@Test
+	void annotationsRemainAvailableWithoutExposingIgnoredState () {
 		var schema = ConfigIntrospector.inspect(new Example());
 		assertFalse(schema.syncable());
 		assertTrue(schema.find("revision").isEmpty());
@@ -71,7 +80,8 @@ class ConfigEntryTest {
 		assertEquals("config.example.lift.tooltip", annotation.tooltip());
 	}
 
-	@Test void draftsAndDefaultsAreIndependent () {
+	@Test
+	void draftsAndDefaultsAreIndependent () {
 		var first = new Example();
 		var second = new Example();
 		first.flight.lift.set(.5f);
@@ -81,18 +91,22 @@ class ConfigEntryTest {
 		assertEquals(.5f, first.flight.lift.get());
 	}
 
-	enum Mode { FIRST, SECOND }
+	enum Mode {
+		FIRST,
+		SECOND
+	}
 
 	@Config(name = "example")
 	public static class Example {
-		public final Flight flight = new Flight();
-		public final float readOnly = 1200f;
-		public final IntegerValue offset = IntegerValue.of(7, 0, 64);
-		public final EnumValue<Mode> mode = EnumValue.of(Mode.FIRST);
-		public final ColorValue color = ColorValue.of(0xFFFFFF);
-		public float unboundedFloat = 1f;
-		public double unboundedDouble = 1d;
-		@Ignore public long revision;
+		public final Flight          flight          = new Flight();
+		public final float           readOnly        = 1200f;
+		public final IntegerValue    offset          = IntegerValue.of(7, 0, 64);
+		public final EnumValue<Mode> mode            = EnumValue.of(Mode.FIRST);
+		public final ColorValue      color           = ColorValue.of(0xFFFFFF);
+		public       float           unboundedFloat  = 1f;
+		public       double          unboundedDouble = 1d;
+		@Ignore
+		public       long            revision;
 	}
 
 	public static class Flight {

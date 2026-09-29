@@ -1,10 +1,6 @@
 package com.iso2t.easyconfig.api.reflect;
 
-import com.iso2t.easyconfig.api.annotations.Comment;
-import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
-import com.iso2t.easyconfig.api.annotations.Config;
-import com.iso2t.easyconfig.api.annotations.Ignore;
-import com.iso2t.easyconfig.api.annotations.NoSync;
+import com.iso2t.easyconfig.api.annotations.*;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
@@ -179,12 +175,12 @@ public final class ConfigReflection {
 			if (providerClass == null) return;
 
 			@SuppressWarnings("unchecked") CommentValueProvider<Object> provider = (CommentValueProvider<Object>) providerClass.getDeclaredConstructor().newInstance();
-			Object currentValue = fieldValue instanceof ConfigValue<?> configValue ? configValue.get() : fieldValue;
+			Object defaultValue = fieldValue instanceof ConfigValue<?> configValue ? configValue.getDefault() : fieldValue;
 
-			Object toPass = currentValue;
+			Object toPass = defaultValue;
 			if (fieldValue != null) {
 				Class<?> expectedType = getProviderExpectedType(providerClass);
-				if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(currentValue)) {
+				if (expectedType.isInstance(fieldValue) && !expectedType.isInstance(defaultValue)) {
 					toPass = fieldValue;
 				}
 			}

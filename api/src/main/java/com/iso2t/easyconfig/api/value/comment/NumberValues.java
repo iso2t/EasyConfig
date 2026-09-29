@@ -13,7 +13,7 @@ import java.util.List;
  *
  * <p>Emits three lines:
  * <ol>
- *   <li>{@code Default: <currentValue>} (if the field implements {@link ConfigValue})</li>
+ *   <li>{@code Default: <defaultValue>} (if the field implements {@link ConfigValue})</li>
  *   <li>{@code Min: <minValue>}</li>
  *   <li>{@code Max: <maxValue>}</li>
  * </ol>
@@ -33,7 +33,7 @@ public final class NumberValues implements CommentValueProvider<NumberRange<?>> 
 		List<String> lines = new ArrayList<>();
 
 		if (range instanceof ConfigValue<?> cv) {
-			lines.add("Default: " + cv.get());
+			lines.add("Default: " + cv.getDefault());
 		}
 
 		lines.add("Min: " + range.getMin() + " | Max: " + range.getMax());

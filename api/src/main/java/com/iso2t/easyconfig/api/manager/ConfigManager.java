@@ -4,6 +4,7 @@ import com.iso2t.easyconfig.api.files.AbstractFileType;
 import com.iso2t.easyconfig.api.files.ConfigNode;
 import com.iso2t.easyconfig.api.files.FileTypes;
 import com.iso2t.easyconfig.api.files.Json5;
+import com.iso2t.easyconfig.api.metadata.ConfigEntry;
 import com.iso2t.easyconfig.api.metadata.ConfigIntrospector;
 import com.iso2t.easyconfig.api.metadata.ConfigSchema;
 import com.iso2t.easyconfig.api.reflect.ConfigReflection;
@@ -15,12 +16,11 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 public class ConfigManager<T> {
 
@@ -72,7 +72,7 @@ public class ConfigManager<T> {
 			if (existingRoot != null) {
 				populate(cfg, existingRoot);
 			}
-			fileType.write(file, merge(existingRoot, buildObject(cfg)));
+			write(merge(existingRoot, buildObject(cfg)));
 		} catch (IOException | IllegalAccessException e) {
 			throw new IllegalStateException("Failed to load and save config " + file, e);
 		}
@@ -84,7 +84,8 @@ public class ConfigManager<T> {
 	 */
 	public void save (T config) {
 		try {
-			fileType.write(file, merge(readExistingRoot(), buildObject(config)));
+			validate(config);
+			write(merge(readExistingRoot(), buildObject(config)));
 		} catch (IOException | IllegalAccessException e) {
 			throw new IllegalStateException("Failed to save config " + file, e);
 		}
@@ -125,10 +126,34 @@ public class ConfigManager<T> {
 		return file;
 	}
 
+	private void validate (T config) {
+		for (var entry : schema(config).editableEntries()) {
+			if (!entry.kind().scalar()) continue;
+			var result = entry.validate(entry.value());
+			if (result.failed()) throw new IllegalArgumentException(result.message());
+		}
+	}
+
+	private void write (ConfigNode root) throws IOException {
+		Path target = file.toAbsolutePath();
+		Files.createDirectories(target.getParent());
+		Path temporary = Files.createTempFile(target.getParent(), target.getFileName().toString() + ".", ".tmp");
+		try {
+			fileType.write(temporary, root);
+			try {
+				Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+			} catch (AtomicMoveNotSupportedException e) {
+				Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+			}
+		} finally {
+			Files.deleteIfExists(temporary);
+		}
+	}
+
 	private ConfigNode readExistingRoot () throws IOException {
 		if (!Files.exists(file)) return null;
 		ConfigNode root = fileType.read(file);
-		if (root == null || !root.isObject()) return null;
+		if (root == null || !root.isObject()) throw new IOException("Config root must be an object: " + file);
 		return root;
 	}
 
@@ -179,9 +204,13 @@ public class ConfigManager<T> {
 	}
 
 	private void populate (Object obj, ConfigNode node) throws IOException, IllegalAccessException {
+		if (!node.isObject()) throw new IOException("Expected a config object in " + file);
+		var schema = ConfigIntrospector.inspect(obj);
 		for (Field f : ConfigReflection.configFields(obj.getClass())) {
-			String key = f.getName().toLowerCase();
+			String key = f.getName().toLowerCase(Locale.ROOT);
 			ConfigNode child = node.get(key);
+			if (!node.contains(key)) continue;
+			if (child.isNull()) throw new IllegalArgumentException("Null config value: " + key);
 
 			if (ConfigReflection.isNestedConfig(f.getType())) {
 				populateNestedConfig(obj, f, child);
@@ -194,7 +223,7 @@ public class ConfigManager<T> {
 			}
 
 			if (ConfigValue.class.isAssignableFrom(f.getType())) {
-				populateScalarValue(obj, f, child);
+				populateScalarValue(obj, f, child, schema.find(key).orElseThrow());
 				continue;
 			}
 
@@ -210,9 +239,8 @@ public class ConfigManager<T> {
 			nested = instantiate(f.getType());
 			f.set(obj, nested);
 		}
-		if (child.isObject()) {
-			populate(nested, child);
-		}
+		if (!child.isObject()) throw new IllegalArgumentException("Expected a section for " + f.getName());
+		populate(nested, child);
 	}
 
 	private void populateListValue (Object obj, Field f, ConfigNode child) throws IOException, IllegalAccessException {
@@ -271,21 +299,25 @@ public class ConfigManager<T> {
 		}
 	}
 
-	private void populateScalarValue (Object obj, Field f, ConfigNode child) throws IllegalAccessException {
-		Object raw = f.get(obj);
-		if (!child.isNull()) {
-			try {
-				if (raw instanceof SerializedConfigValue<?> serializedConfigValue) {
-					@SuppressWarnings("unchecked") SerializedConfigValue<Object> writable = (SerializedConfigValue<Object>) serializedConfigValue;
-					writable.deserialize(child.rawValue());
-					return;
-				}
-
-				@SuppressWarnings("unchecked") ConfigValue<Object> cv = (ConfigValue<Object>) raw;
-				Object v = fileType.readValue(child, ConfigReflection.inferValueType(f));
-				cv.set(v);
-			} catch (IOException | RuntimeException _) {
-			}
+	private void populateScalarValue (Object obj, Field field, ConfigNode child, ConfigEntry entry) throws IllegalAccessException, IOException {
+		Object raw = field.get(obj);
+		Object value = child.rawValue();
+		if (entry.kind().scalar()) {
+			boolean validType = switch (entry.kind()) {
+				case BOOLEAN -> value instanceof Boolean;
+				case NUMBER -> value instanceof Number;
+				case STRING, CHARACTER, ENUM -> value instanceof String;
+				case COLOR -> value instanceof String || value instanceof Number;
+				default -> true;
+			};
+			if (!validType) throw new IllegalArgumentException("Wrong value type for " + entry.path());
+			entry.setValue(value);
+		} else if (raw instanceof SerializedConfigValue<?> serialized) {
+			@SuppressWarnings("unchecked") SerializedConfigValue<Object> writable = (SerializedConfigValue<Object>) serialized;
+			writable.deserialize(value);
+		} else {
+			@SuppressWarnings("unchecked") ConfigValue<Object> writable = (ConfigValue<Object>) raw;
+			writable.set(fileType.readValue(child, ConfigReflection.inferValueType(field)));
 		}
 	}
 
@@ -300,7 +332,7 @@ public class ConfigManager<T> {
 		ConfigNode object = ConfigNode.object();
 
 		for (Field f : ConfigReflection.configFields(obj.getClass())) {
-			String key = f.getName().toLowerCase();
+			String key = f.getName().toLowerCase(Locale.ROOT);
 			object.put(key, buildFieldValue(obj, f), ConfigReflection.collectComments(f, obj));
 		}
 

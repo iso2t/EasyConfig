@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
  *     <li>{@code FIELD}: For ignoring a specific field.</li>
  * </ul>
  *
- * @since 26.1.0.1
  * @author iso2t
+ * @since 26.1.0.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target( { ElementType.TYPE, ElementType.FIELD })

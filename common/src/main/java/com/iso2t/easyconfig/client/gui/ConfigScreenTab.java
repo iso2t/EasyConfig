@@ -16,13 +16,13 @@ import java.util.function.Supplier;
 
 public final class ConfigScreenTab<T> {
 
-	private final Component                 title;
-	private final Consumer<T>               saveAction;
-	private final Supplier<ConfigSchema<T>> reloadAction;
-	private       ConfigSchema<T>           schema;
-	private Function<T, Optional<Component>> validation = config -> Optional.empty();
-	private Function<T, Component> description = config -> Component.empty();
-	private BooleanSupplier editable = () -> true;
+	private final Component                        title;
+	private final Consumer<T>                      saveAction;
+	private final Supplier<ConfigSchema<T>>        reloadAction;
+	private       ConfigSchema<T>                  schema;
+	private       Function<T, Optional<Component>> validation  = config -> Optional.empty();
+	private       Function<T, Component>           description = config -> Component.empty();
+	private       BooleanSupplier                  editable    = () -> true;
 
 	public ConfigScreenTab<T> validation (Function<T, Optional<Component>> validation) {
 		this.validation = Objects.requireNonNull(validation);
@@ -58,14 +58,12 @@ public final class ConfigScreenTab<T> {
 
 	public Component tooltip (ConfigEntry entry) {
 		var translation = entry.field().getAnnotation(Translation.class);
-		return translation == null || translation.tooltip().isEmpty()
-				? Component.literal(String.join("\n", entry.comments())) : Component.translatable(translation.tooltip());
+		return translation == null || translation.tooltip().isEmpty() ? Component.literal(String.join("\n", entry.comments())) : Component.translatable(translation.tooltip());
 	}
 
 	public Component valueLabel (ConfigEntry entry, Object value) {
 		var translation = entry.field().getAnnotation(Translation.class);
-		return translation != null && !translation.valuePrefix().isEmpty() && value instanceof Enum<?> constant
-				? Component.translatable(translation.valuePrefix() + constant.name().toLowerCase(Locale.ROOT)) : Component.literal(String.valueOf(value));
+		return translation != null && !translation.valuePrefix().isEmpty() && value instanceof Enum<?> constant ? Component.translatable(translation.valuePrefix() + constant.name().toLowerCase(Locale.ROOT)) : Component.literal(String.valueOf(value));
 	}
 
 	public ConfigScreenTab (Component title, ConfigSchema<T> schema, Consumer<T> saveAction, Supplier<ConfigSchema<T>> reloadAction) {

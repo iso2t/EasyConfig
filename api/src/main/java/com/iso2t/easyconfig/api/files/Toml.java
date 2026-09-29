@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
  * making it suitable for file type handling in systems supporting hierarchical
  * configurations with inline and multiline comments.
  *
- * @since 26.1.0.0
  * @author iso2t
+ * @since 26.1.0.0
  */
 public class Toml extends AbstractFileType implements ISupportsComments {
 	private static final Pattern BARE_KEY = Pattern.compile("[A-Za-z0-9_-]+");
@@ -45,7 +45,8 @@ public class Toml extends AbstractFileType implements ISupportsComments {
 	@Override
 	public ConfigNode read (Path file) throws IOException {
 		try (BufferedReader reader = Files.newBufferedReader(file)) {
-			return toConfigNode(mapper.readTree(reader));
+			var document = mapper.readTree(reader);
+			return document == null ? ConfigNode.object() : toConfigNode(document);
 		}
 	}
 
@@ -194,7 +195,12 @@ public class Toml extends AbstractFileType implements ISupportsComments {
 			return;
 		}
 
-		if (value instanceof Character || value instanceof CharSequence || value instanceof Enum<?>) {
+		if (value instanceof Enum<?> constant) {
+			writer.write(quote(constant.name()));
+			return;
+		}
+
+		if (value instanceof Character || value instanceof CharSequence) {
 			writer.write(quote(value.toString()));
 			return;
 		}

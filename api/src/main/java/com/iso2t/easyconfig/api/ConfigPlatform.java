@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public final class ConfigPlatform {
 
-	private static Path             configDir = Path.of("config");
+	private static Path             configDir       = Path.of("config");
 	private static Consumer<String> screenRegistrar = ignored -> {
 	};
 

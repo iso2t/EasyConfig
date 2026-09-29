@@ -14,13 +14,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.Objects;
 
 public class ConfigScreen extends Screen {
 
@@ -29,15 +24,15 @@ public class ConfigScreen extends Screen {
 	private static final int ROW_HEIGHT                = 28;
 	private static final int FALLBACK_TEXT_COLOR       = 0xFFFFFFFF;
 	private static final int FALLBACK_MUTED_TEXT_COLOR = 0xFFA0A0A0;
-	private static final int CONTROL_SPACING          = 4;
-	private static final int COLOR_SWATCH_WIDTH       = 20;
-	private static final int RESET_BUTTON_WIDTH       = 20;
+	private static final int CONTROL_SPACING           = 4;
+	private static final int COLOR_SWATCH_WIDTH        = 20;
+	private static final int RESET_BUTTON_WIDTH        = 20;
 
-	private final Screen                   parent;
-	private final List<ConfigScreenTab<?>> tabs;
-	private       int                      selectedTab;
-	private       ConfigEntryList          entryList;
-	private Button saveButton;
+	private final Screen                      parent;
+	private final List<ConfigScreenTab<?>>    tabs;
+	private       int                         selectedTab;
+	private       ConfigEntryList             entryList;
+	private       Button                      saveButton;
 	private final Map<ConfigEntry, Component> inputErrors = new HashMap<>();
 
 	public Optional<Component> validationError () {
@@ -170,7 +165,7 @@ public class ConfigScreen extends Screen {
 	private final class ConfigEntryRow extends ContainerObjectSelectionList.Entry<ConfigEntryRow> {
 
 		private final ConfigEntry          entry;
-		private final List<AbstractWidget> controls = new ArrayList<>();
+		private final List<AbstractWidget> controls      = new ArrayList<>();
 		private final List<AbstractWidget> valueControls = new ArrayList<>();
 		private       Button               resetButton;
 

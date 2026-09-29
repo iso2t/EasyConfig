@@ -1,8 +1,8 @@
 ﻿{
-    "key.easyconfig.open_config_screen":  "Otvoriť obrazovku EasyConfig",
-    "easyconfig.config_screen.title":  "%s",
-    "easyconfig.config_screen.save":  "Uložiť",
-    "easyconfig.config_screen.reload":  "Znovu načítať",
-    "easyconfig.config_screen.reset":  "Resetovať",
-    "easyconfig.config_screen.done":  "Hotovo"
+  "key.easyconfig.open_config_screen": "Otvoriť obrazovku EasyConfig",
+  "easyconfig.config_screen.title": "%s",
+  "easyconfig.config_screen.save": "Uložiť",
+  "easyconfig.config_screen.reload": "Znovu načítať",
+  "easyconfig.config_screen.reset": "Resetovať",
+  "easyconfig.config_screen.done": "Hotovo"
 }

@@ -2,10 +2,12 @@
 
 <p align="center">A class-based config API and in-game config screen for Minecraft mods.</p>
 
-EasyConfig makes it easy to create, modify, and share config files for your mod. With an easily accessible in-game config screen, users can adjust settings on the fly
+EasyConfig makes it easy to create, modify, and share config files for your mod. With an easily accessible in-game
+config screen, users can adjust settings on the fly
 without having to manually edit config files.
 
-EasyConfig naturally integrates with NeoForge, not replacing their configs, but giving a cleaner alternative. For Fabric,
+EasyConfig naturally integrates with NeoForge, not replacing their configs, but giving a cleaner alternative. For
+Fabric,
 EasyConfig integrates with ModMenu for in-game config access, while still remaining an optional dependency.
 
 ## What It Provides
@@ -33,7 +35,7 @@ Fabric:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.7"
+    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.8"
 }
 ```
 
@@ -41,7 +43,7 @@ NeoForge:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.7"
+    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.8"
 }
 ```
 
@@ -49,11 +51,12 @@ API only:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:api:1.263.4.0"
+    implementation "com.iso2t.easyconfig:api:1.263.4.1"
 }
 ```
 
-The Fabric and NeoForge artifacts include the API classes in the built mod jar. Use the standalone `api` artifact only when you want the Java config API without EasyConfig's Minecraft mod implementation or in-game screens.
+The Fabric and NeoForge artifacts include the API classes in the built mod jar. Use the standalone `api` artifact only
+when you want the Java config API without EasyConfig's Minecraft mod implementation or in-game screens.
 
 ## Creating a Config
 
@@ -103,9 +106,11 @@ public final class ExampleMod {
 }
 ```
 
-This loads the config, writes missing values, and saves comments. When using the Fabric or NeoForge artifact, it also registers the config screen.
+This loads the config, writes missing values, and saves comments. When using the Fabric or NeoForge artifact, it also
+registers the config screen.
 
-Screen registration is handled by the EasyConfig mod artifacts. If you use the standalone Java API outside Minecraft, configure the config directory through `ConfigPlatform`.
+Screen registration is handled by the EasyConfig mod artifacts. If you use the standalone Java API outside Minecraft,
+configure the config directory through `ConfigPlatform`.
 
 ```java
 import com.iso2t.easyconfig.api.ConfigPlatform;
@@ -239,6 +244,11 @@ ConfigManager<ExampleConfig> manager = new ConfigManager<>(
 ExampleConfig config = manager.loadAndSave();
 manager.save(config);
 ```
+
+For validation across multiple fields, call `load()`, validate the returned object,
+then call `save(config)`. Scalar wrapper values are checked against their types and
+ranges during loading; invalid values fail instead of being replaced silently.
+Saves replace the file after serialization succeeds.
 
 Useful methods:
 

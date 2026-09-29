@@ -5,7 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Translation keys for a generated control or nested section. */
+/**
+ * Translation keys for a generated control or nested section.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Translation {
@@ -14,6 +16,8 @@ public @interface Translation {
 
 	String tooltip () default "";
 
-	/** Prefix followed by the lowercase enum constant name. */
+	/**
+	 * Prefix followed by the lowercase enum constant name.
+	 */
 	String valuePrefix () default "";
 }

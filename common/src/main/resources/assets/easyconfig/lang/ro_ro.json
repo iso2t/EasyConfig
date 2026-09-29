@@ -1,8 +1,8 @@
 ﻿{
-    "key.easyconfig.open_config_screen":  "Deschide ecranul EasyConfig",
-    "easyconfig.config_screen.title":  "%s",
-    "easyconfig.config_screen.save":  "Salvează",
-    "easyconfig.config_screen.reload":  "Reîncarcă",
-    "easyconfig.config_screen.reset":  "Resetează",
-    "easyconfig.config_screen.done":  "Gata"
+  "key.easyconfig.open_config_screen": "Deschide ecranul EasyConfig",
+  "easyconfig.config_screen.title": "%s",
+  "easyconfig.config_screen.save": "Salvează",
+  "easyconfig.config_screen.reload": "Reîncarcă",
+  "easyconfig.config_screen.reset": "Resetează",
+  "easyconfig.config_screen.done": "Gata"
 }
