@@ -21,7 +21,7 @@ import java.util.Objects;
 public class ConfigScreen extends Screen {
 
 	private static final int HEADER_HEIGHT             = 56;
-	private static final int FOOTER_HEIGHT             = 36;
+	private static final int FOOTER_HEIGHT             = 52;
 	private static final int ROW_HEIGHT                = 28;
 	private static final int FALLBACK_TEXT_COLOR       = 0xFFFFFFFF;
 	private static final int FALLBACK_MUTED_TEXT_COLOR = 0xFFA0A0A0;
@@ -33,6 +33,12 @@ public class ConfigScreen extends Screen {
 	private final List<ConfigScreenTab<?>> tabs;
 	private       int                      selectedTab;
 	private       ConfigEntryList          entryList;
+	private Button saveButton;
+	private final java.util.Map<ConfigEntry, Component> inputErrors = new java.util.HashMap<>();
+
+	public java.util.Optional<Component> validationError () {
+		return inputErrors.isEmpty() ? selectedTab().error() : java.util.Optional.of(inputErrors.values().iterator().next());
+	}
 
 	public ConfigScreen (Screen parent, Component title, List<ConfigScreenTab<?>> tabs) {
 		super(title);
@@ -56,11 +62,14 @@ public class ConfigScreen extends Screen {
 	@Override
 	public void extractRenderState (GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickProgress) {
 		graphics.centeredText(font, title, width / 2, 12, textColor());
+		saveButton.active = selectedTab().editable() && validationError().isEmpty();
+		validationError().ifPresent(error -> graphics.centeredText(font, font.plainSubstrByWidth(error.getString(), width - 16), width / 2, height - 44, 0xFFFF5555));
 		super.extractRenderState(graphics, mouseX, mouseY, tickProgress);
 	}
 
 	@Override
 	protected void rebuildWidgets () {
+		inputErrors.clear();
 		clearWidgets();
 		addTabs();
 		addEntryList();
@@ -97,7 +106,8 @@ public class ConfigScreen extends Screen {
 		int totalWidth = buttonWidth * 4 + spacing * 3;
 		int x = (width - totalWidth) / 2;
 
-		addRenderableWidget(Button.builder(Component.translatable("easyconfig.config_screen.save"), ignored -> saveSelected()).bounds(x, y, buttonWidth, 20).build());
+		saveButton = addRenderableWidget(Button.builder(Component.translatable("easyconfig.config_screen.save"), ignored -> saveSelected()).bounds(x, y, buttonWidth, 20).build());
+		saveButton.active = selectedTab().editable() && validationError().isEmpty();
 		addRenderableWidget(Button.builder(Component.translatable("easyconfig.config_screen.reload"), ignored -> reloadSelected()).bounds(x + (buttonWidth + spacing), y, buttonWidth, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("easyconfig.config_screen.reset"), ignored -> resetSelected()).bounds(x + (buttonWidth + spacing) * 2, y, buttonWidth, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("easyconfig.config_screen.done"), ignored -> onClose()).bounds(x + (buttonWidth + spacing) * 3, y, buttonWidth, 20).build());
@@ -109,16 +119,17 @@ public class ConfigScreen extends Screen {
 		rebuildWidgets();
 	}
 
-	private void saveSelected () {
-		selectedTab().save();
+	public void saveSelected () {
+		if (validationError().isEmpty()) selectedTab().save();
 	}
 
-	private void reloadSelected () {
+	protected void reloadSelected () {
 		selectedTab().reload();
 		rebuildWidgets();
 	}
 
 	private void resetSelected () {
+		if (!selectedTab().editable()) return;
 		for (ConfigEntry entry : selectedTab().schema().editableEntries()) {
 			entry.tryResetValue();
 		}
@@ -165,11 +176,11 @@ public class ConfigScreen extends Screen {
 			int labelY = getContentYMiddle() - font.lineHeight / 2;
 
 			if (entry.kind() == ConfigEntryKind.SECTION) {
-				graphics.text(font, entry.displayName(), labelX, labelY, 0xFFFFD966, false);
+				graphics.text(font, selectedTab().label(entry), labelX, labelY, 0xFFFFD966, false);
 				return;
 			}
 
-			graphics.text(font, entry.displayName(), labelX, labelY, entry.editable() ? textColor() : mutedTextColor(), false);
+			graphics.text(font, selectedTab().label(entry), labelX, labelY, selectedTab().editable() && entry.editable() ? textColor() : mutedTextColor(), false);
 			updateResetButton();
 			for (int i = 0; i < valueControls.size(); i++) {
 				AbstractWidget control = valueControls.get(i);
@@ -198,8 +209,9 @@ public class ConfigScreen extends Screen {
 		}
 
 		private void createControls () {
-			if (!entry.editable()) {
-				addValueControl(readOnlyButton("Read only"));
+			if (entry.kind() == ConfigEntryKind.SECTION) return;
+			if (!selectedTab().editable() || !entry.editable()) {
+				addValueControl(readOnlyButton(selectedTab().valueLabel(entry, entry.value())));
 				return;
 			}
 
@@ -208,7 +220,7 @@ public class ConfigScreen extends Screen {
 				case ENUM -> addValueControl(enumControl());
 				case COLOR -> addValueControls(colorControls());
 				case NUMBER, STRING, CHARACTER -> addValueControl(textControl());
-				case LIST, ARRAY, OBJECT, UNKNOWN -> addValueControl(readOnlyButton("Unsupported"));
+				case LIST, ARRAY, OBJECT, UNKNOWN -> addValueControl(readOnlyButton(Component.literal("Unsupported")));
 				case SECTION -> {
 				}
 			}
@@ -222,7 +234,7 @@ public class ConfigScreen extends Screen {
 
 		private AbstractWidget booleanControl () {
 			boolean value = Boolean.TRUE.equals(entry.value());
-			return CycleButton.onOffBuilder(value).displayOnlyValue().create(0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> {
+			return CycleButton.onOffBuilder(value).displayOnlyValue().create(0, 0, valueControlWidth(), 20, selectedTab().label(entry), (button, selected) -> {
 				entry.trySetValue(selected);
 				updateResetButton();
 			});
@@ -230,18 +242,20 @@ public class ConfigScreen extends Screen {
 
 		private AbstractWidget enumControl () {
 			List<Object> values = entry.allowedValues();
-			return CycleButton.builder(value -> Component.literal(String.valueOf(value)), entry.value()).withValues(values).displayOnlyValue().create(0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()), (button, selected) -> {
+			return CycleButton.builder(value -> selectedTab().valueLabel(entry, value), entry.value()).withValues(values).displayOnlyValue().create(0, 0, valueControlWidth(), 20, selectedTab().label(entry), (button, selected) -> {
 				entry.trySetValue(selected);
 				updateResetButton();
 			});
 		}
 
 		private AbstractWidget textControl () {
-			EditBox box = new EditBox(font, 0, 0, valueControlWidth(), 20, Component.literal(entry.displayName()));
+			EditBox box = new EditBox(font, 0, 0, valueControlWidth(), 20, selectedTab().label(entry));
 			box.setMaxLength(256);
 			box.setValue(String.valueOf(entry.value()));
 			box.setResponder(value -> {
 				ConfigValueResult result = entry.trySetValue(value);
+				if (result.failed()) inputErrors.put(entry, Component.literal(result.message()));
+				else inputErrors.remove(entry);
 				box.setTextColor(result.success() ? textColor() : 0xFFFF5555);
 				if (result.success()) updateResetButton();
 			});
@@ -250,7 +264,7 @@ public class ConfigScreen extends Screen {
 
 		private List<AbstractWidget> colorControls () {
 			Button[] swatch = new Button[1];
-			swatch[0] = Button.builder(colorPreview(entry.value()), ignored -> ConfigScreen.this.minecraft.gui.setScreen(new ColorPickerScreen(ConfigScreen.this, Component.literal(entry.displayName()), asColor(entry.value()), color -> {
+			swatch[0] = Button.builder(colorPreview(entry.value()), ignored -> ConfigScreen.this.minecraft.gui.setScreen(new ColorPickerScreen(ConfigScreen.this, selectedTab().label(entry), asColor(entry.value()), color -> {
 				ConfigValueResult result = entry.trySetValue(color);
 				if (result.success()) {
 					swatch[0].setMessage(colorPreview(color));
@@ -261,8 +275,8 @@ public class ConfigScreen extends Screen {
 			return List.of(swatch[0]);
 		}
 
-		private AbstractWidget readOnlyButton (String label) {
-			Button button = Button.builder(Component.literal(label), ignored -> {
+		private AbstractWidget readOnlyButton (Component label) {
+			Button button = Button.builder(label, ignored -> {
 			}).bounds(0, 0, valueControlWidth(), 20).build();
 			button.active = false;
 			return button;
@@ -320,6 +334,8 @@ public class ConfigScreen extends Screen {
 		}
 
 		private void addValueControl (AbstractWidget control) {
+			Component tooltip = selectedTab().tooltip(entry);
+			if (tooltip != null && !tooltip.getString().isEmpty()) control.setTooltip(Tooltip.create(tooltip));
 			valueControls.add(control);
 			controls.add(control);
 		}
@@ -345,7 +361,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		private boolean resetVisible () {
-			return entry.scalarEditable() && !entry.isDefaultValue();
+			return selectedTab().editable() && entry.scalarEditable() && !entry.isDefaultValue();
 		}
 
 	}

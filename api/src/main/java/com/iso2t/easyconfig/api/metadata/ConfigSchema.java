@@ -17,6 +17,12 @@ public final class ConfigSchema<T> {
 		this.syncable = syncable;
 	}
 
+	/** Builds a schema for externally managed configuration, without file or registry side effects. */
+	public static ConfigSchema<Object> ofEntries (List<ConfigEntry> entries) {
+		if (entries.stream().map(ConfigEntry::path).distinct().count() != entries.size()) throw new IllegalArgumentException("Duplicate entry path");
+		return new ConfigSchema<>(Object.class, new Object(), entries, false);
+	}
+
 	public Class<T> type () {
 		return type;
 	}
