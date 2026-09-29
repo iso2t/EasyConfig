@@ -33,4 +33,14 @@ public @interface Config {
 	 * @return the side associated with the configuration. The default is {@code Side.COMMON}.
 	 */
 	Side side () default Side.COMMON;
+
+	/**
+	 * Whether this config should be considered syncable by loader implementations.
+	 * <p>
+	 * Syncable configs should be treated as opt-out at the field level. Use
+	 * {@link NoSync} on fields or nested sections that must remain local only.
+	 *
+	 * @return true if the config is syncable.
+	 */
+	boolean sync () default false;
 }

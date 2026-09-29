@@ -3,9 +3,6 @@ plugins {
     id 'maven-publish'
 }
 
-import org.gradle.api.artifacts.repositories.PasswordCredentials
-import org.gradle.authentication.http.BasicAuthentication
-
 def apiProjectName = 'api'
 def isApiProject = project.name == apiProjectName
 

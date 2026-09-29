@@ -8,11 +8,13 @@ public final class ConfigSchema<T> {
 	private final Class<T>          type;
 	private final T                 config;
 	private final List<ConfigEntry> entries;
+	private final boolean           syncable;
 
-	ConfigSchema (Class<T> type, T config, List<ConfigEntry> entries) {
+	ConfigSchema (Class<T> type, T config, List<ConfigEntry> entries, boolean syncable) {
 		this.type = type;
 		this.config = config;
 		this.entries = List.copyOf(entries);
+		this.syncable = syncable;
 	}
 
 	public Class<T> type () {
@@ -29,6 +31,14 @@ public final class ConfigSchema<T> {
 
 	public List<ConfigEntry> editableEntries () {
 		return entries.stream().filter(ConfigEntry::editable).toList();
+	}
+
+	public boolean syncable () {
+		return syncable;
+	}
+
+	public List<ConfigEntry> syncableEntries () {
+		return entries.stream().filter(ConfigEntry::syncable).toList();
 	}
 
 	public List<ConfigEntry> sections () {

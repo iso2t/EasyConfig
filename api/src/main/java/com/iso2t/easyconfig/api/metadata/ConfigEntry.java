@@ -26,9 +26,10 @@ public final class ConfigEntry {
 	private final List<Object>    allowedValues;
 	private final Object          minValue;
 	private final Object          maxValue;
+	private final boolean         syncable;
 	private final boolean         editable;
 
-	ConfigEntry (List<String> path, String key, String displayName, ConfigEntryKind kind, Field field, Object owner, Object defaultOwner, Class<?> valueType, List<String> comments, List<Object> allowedValues, Object minValue, Object maxValue) {
+	ConfigEntry (List<String> path, String key, String displayName, ConfigEntryKind kind, Field field, Object owner, Object defaultOwner, Class<?> valueType, List<String> comments, List<Object> allowedValues, Object minValue, Object maxValue, boolean syncable) {
 		this.path = List.copyOf(path);
 		this.key = key;
 		this.displayName = displayName;
@@ -42,6 +43,7 @@ public final class ConfigEntry {
 		this.allowedValues = List.copyOf(allowedValues);
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		this.syncable = syncable;
 		this.editable = kind != ConfigEntryKind.SECTION && (ConfigValue.class.isAssignableFrom(fieldType) || !Modifier.isFinal(field.getModifiers()));
 	}
 
@@ -95,6 +97,10 @@ public final class ConfigEntry {
 
 	public boolean editable () {
 		return editable;
+	}
+
+	public boolean syncable () {
+		return syncable;
 	}
 
 	public boolean scalarEditable () {

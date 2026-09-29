@@ -24,14 +24,16 @@ public final class ConfigIntrospector {
 		T defaultConfig = ConfigReflection.instantiate(type);
 
 		List<ConfigEntry> entries = new ArrayList<>();
-		collect(config, defaultConfig, List.of(), entries);
-		return new ConfigSchema<>(type, config, entries);
+		boolean syncable = ConfigReflection.isSyncableConfig(type);
+		collect(config, defaultConfig, List.of(), entries, syncable);
+		return new ConfigSchema<>(type, config, entries, syncable);
 	}
 
-	private static void collect (Object owner, Object defaultOwner, List<String> parentPath, List<ConfigEntry> entries) {
+	private static void collect (Object owner, Object defaultOwner, List<String> parentPath, List<ConfigEntry> entries, boolean syncable) {
 		for (Field field : ConfigReflection.configFields(owner.getClass())) {
 			String key = field.getName().toLowerCase(Locale.ROOT);
 			List<String> path = append(parentPath, key);
+			boolean fieldSyncable = syncable && !ConfigReflection.isSyncDisabled(field);
 
 			Object raw = readField(field, owner);
 			Object defaultRaw = defaultOwner == null ? null : readField(field, defaultOwner);
@@ -39,17 +41,17 @@ public final class ConfigIntrospector {
 			if (ConfigReflection.isNestedConfig(field.getType())) {
 				Object nested = ensureNested(field, owner, raw);
 				Object defaultNested = defaultOwner == null ? null : ensureNested(field, defaultOwner, defaultRaw);
-				entries.add(entry(path, key, field, owner, defaultOwner, nested, ConfigEntryKind.SECTION));
-				collect(nested, defaultNested, path, entries);
+				entries.add(entry(path, key, field, owner, defaultOwner, nested, ConfigEntryKind.SECTION, fieldSyncable));
+				collect(nested, defaultNested, path, entries, fieldSyncable);
 				continue;
 			}
 
-			entries.add(entry(path, key, field, owner, defaultOwner, raw, kind(field, raw)));
+			entries.add(entry(path, key, field, owner, defaultOwner, raw, kind(field, raw), fieldSyncable));
 		}
 	}
 
-	private static ConfigEntry entry (List<String> path, String key, Field field, Object owner, Object defaultOwner, Object raw, ConfigEntryKind kind) {
-		return new ConfigEntry(path, key, displayName(field.getName()), kind, field, owner, defaultOwner, valueType(field, raw), ConfigReflection.collectComments(field, owner), allowedValues(field, raw), ConfigEntry.minValue(raw), ConfigEntry.maxValue(raw));
+	private static ConfigEntry entry (List<String> path, String key, Field field, Object owner, Object defaultOwner, Object raw, ConfigEntryKind kind, boolean syncable) {
+		return new ConfigEntry(path, key, displayName(field.getName()), kind, field, owner, defaultOwner, valueType(field, raw), ConfigReflection.collectComments(field, owner), allowedValues(field, raw), ConfigEntry.minValue(raw), ConfigEntry.maxValue(raw), syncable);
 	}
 
 	private static ConfigEntryKind kind (Field field, Object raw) {

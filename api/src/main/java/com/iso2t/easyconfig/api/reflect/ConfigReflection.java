@@ -4,6 +4,7 @@ import com.iso2t.easyconfig.api.annotations.Comment;
 import com.iso2t.easyconfig.api.annotations.CommentValueProvider;
 import com.iso2t.easyconfig.api.annotations.Config;
 import com.iso2t.easyconfig.api.annotations.Ignore;
+import com.iso2t.easyconfig.api.annotations.NoSync;
 import com.iso2t.easyconfig.api.value.AbstractValue;
 import com.iso2t.easyconfig.api.value.ConfigValue;
 import com.iso2t.easyconfig.api.value.NumberRange;
@@ -34,6 +35,15 @@ public final class ConfigReflection {
 			fields.add(field);
 		}
 		return List.copyOf(fields);
+	}
+
+	public static boolean isSyncableConfig (Class<?> type) {
+		Config config = type.getAnnotation(Config.class);
+		return config != null && config.sync();
+	}
+
+	public static boolean isSyncDisabled (Field field) {
+		return field.isAnnotationPresent(NoSync.class) || field.getType().isAnnotationPresent(NoSync.class);
 	}
 
 	public static boolean isNestedConfig (Class<?> type) {
