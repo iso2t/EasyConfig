@@ -33,7 +33,7 @@ Fabric:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.5"
+    implementation "com.iso2t.easyconfig:easyconfig-fabric-26.3:1.263.0.6"
 }
 ```
 
@@ -41,7 +41,7 @@ NeoForge:
 
 ```gradle
 dependencies {
-    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.5"
+    implementation "com.iso2t.easyconfig:easyconfig-neoforge-26.3:1.263.0.6"
 }
 ```
 

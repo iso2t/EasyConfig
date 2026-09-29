@@ -40,11 +40,12 @@ neoForge {
 }
 
 dependencies {
+    jarJar(implementation("com.fasterxml.jackson.core:jackson-annotations:2.21"))
     implementation("com.google.code.gson:gson:2.13.2")
 
-    implementation("com.fasterxml.jackson.core:jackson-core:2.21.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.21.1")
+    jarJar(implementation("com.fasterxml.jackson.core:jackson-core:2.21.1"))
+    jarJar(implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1"))
+    jarJar(implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.21.1"))
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }

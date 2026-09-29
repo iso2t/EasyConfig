@@ -176,11 +176,12 @@ public class ConfigScreen extends Screen {
 			int labelY = getContentYMiddle() - font.lineHeight / 2;
 
 			if (entry.kind() == ConfigEntryKind.SECTION) {
-				graphics.text(font, selectedTab().label(entry), labelX, labelY, 0xFFFFD966, false);
+				graphics.text(font, font.plainSubstrByWidth(selectedTab().label(entry).getString(), getContentWidth()), labelX, labelY, 0xFFFFD966, false);
+				if (hovered) graphics.setTooltipForNextFrame(font, selectedTab().label(entry), mouseX, mouseY);
 				return;
 			}
 
-			graphics.text(font, selectedTab().label(entry), labelX, labelY, selectedTab().editable() && entry.editable() ? textColor() : mutedTextColor(), false);
+			graphics.text(font, font.plainSubstrByWidth(selectedTab().label(entry).getString(), getContentWidth() - controlWidth() - 8), labelX, labelY, selectedTab().editable() && entry.editable() ? textColor() : mutedTextColor(), false);
 			updateResetButton();
 			for (int i = 0; i < valueControls.size(); i++) {
 				AbstractWidget control = valueControls.get(i);
